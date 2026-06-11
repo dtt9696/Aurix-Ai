@@ -374,14 +374,35 @@ HTML_TEMPLATE = """
             }
 
             // Initiate standard HTTP AJAX request (100% anti-blocking) to call LLM
-            const response = await fetch('/api/diagnose?company=' + encodeURIComponent(currentFullname) + '&ticker=' + encodeURIComponent(currentTicker));
-            const data = await response.json();
+            const fetchPromise = fetch('/api/diagnose?company=' + encodeURIComponent(currentFullname) + '&ticker=' + encodeURIComponent(currentTicker))
+                .then(response => response.json())
+                .then(data => {
+                    // Write entire JSON data package to cache
+                    localStorage.setItem('cached_data_v3_' + currentTicker, JSON.stringify(data));
+                    return data;
+                });
 
-            // Write entire JSON data package to cache
-            localStorage.setItem('cached_data_v3_' + currentTicker, JSON.stringify(data));
+            // Fallback timer: try to load from cache if fetch takes too long
+            const timerPromise = new Promise((resolve, reject) => setTimeout(() => {
+                const cachedDataStr = localStorage.getItem('cached_data_v3_' + currentTicker);
+                if (cachedDataStr) {
+                    console.log("Loading from cache due to timeout");
+                    resolve(JSON.parse(cachedDataStr));
+                } else {
+                    reject("Cache not available");
+                }
+            }, 3000));
 
-            // Render data
-            renderDashboardWithData(data);
+            // Race them
+            try {
+                const data = await Promise.race([fetchPromise, timerPromise]);
+                // Render data
+                renderDashboardWithData(data);
+            } catch (error) {
+                console.error("Fallback error, waiting for fetch...", error);
+                const data = await fetchPromise; // Fallback failed, wait for fetch
+                renderDashboardWithData(data);
+            }
         }
 
         function resetDiagnosis() {
