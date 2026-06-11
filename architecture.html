@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurix AI - Technical Architecture Diagram</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        .glow-box {
+            position: relative;
+        }
+        .glow-box::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 0.75rem;
+            z-index: -1;
+            opacity: 0.4;
+            filter: blur(4px);
+        }
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .4; }
+        }
+    </style>
+</head>
+<body class="p-8 text-slate-200 min-h-screen flex flex-col items-center justify-center">
+
+    <!-- Main Container -->
+    <div class="max-w-6xl w-full bg-slate-900/80 border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+        
+        <!-- Background decorative grid -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none"></div>
+
+        <!-- Header -->
+        <div class="flex justify-between items-start border-b border-slate-800 pb-6 mb-8 relative z-10">
+            <div>
+                <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Active A2A Network</span>
+                <h1 class="text-3xl font-extrabold tracking-tight text-white mt-3">Aurix AI — Technical Architecture</h1>
+                <p class="text-slate-400 text-sm mt-1">Multi-Agent Federated Network, Decoupled Tools via FastMCP & Self-Correcting Shadow Audit Loop</p>
+            </div>
+            <div class="text-right">
+                <span class="text-xs text-slate-500 code-font">v1.5.0-championship</span>
+                <div class="text-xs text-slate-400 mt-1">Engine: <span class="text-blue-400 font-semibold">Gemini 3.5 Flash</span></div>
+            </div>
+        </div>
+
+        <!-- Grid Layout -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
+            
+            <!-- LAYER 1: DATA INGESTION (MCP) -->
+            <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center space-x-2 text-sky-400 mb-4">
+                        <span class="flex h-2 w-2 rounded-full bg-sky-400 pulse-dot"></span>
+                        <h2 class="font-bold text-sm tracking-wider uppercase text-sky-400">01. Data Ingestion</h2>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4">Heterogeneous global data unified into clean context streams via FastMCP protocol.</p>
+                    
+                    <div class="space-y-2">
+                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs flex justify-between items-center">
+                            <span class="font-semibold text-slate-300">SEC EDGAR API</span>
+                            <span class="text-[10px] text-sky-400 code-font">mcp-tool</span>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs flex justify-between items-center">
+                            <span class="font-semibold text-slate-300">FRED Reserve DB</span>
+                            <span class="text-[10px] text-sky-400 code-font">mcp-tool</span>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs flex justify-between items-center">
+                            <span class="font-semibold text-slate-300">WARN Act Registry</span>
+                            <span class="text-[10px] text-sky-400 code-font">mcp-tool</span>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs flex justify-between items-center">
+                            <span class="font-semibold text-slate-300">Google Search</span>
+                            <span class="text-[10px] text-emerald-400 code-font">grounding</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-[10px] text-slate-500 mt-4 border-t border-slate-900 pt-3">
+                    Active Sandbox & SEC Live Modes Supported
+                </div>
+            </div>
+
+            <!-- LAYER 2: DYNAMIC A2A ORCHESTRATION -->
+            <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl glow-box flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center space-x-2 text-blue-400 mb-4">
+                        <span class="flex h-2 w-2 rounded-full bg-blue-400 pulse-dot"></span>
+                        <h2 class="font-bold text-sm tracking-wider uppercase text-blue-400">02. A2A Orchestrator</h2>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4">ADK-powered sovereign brain routing tasks dynamically between sub-agents.</p>
+                    
+                    <div class="bg-slate-900 border border-blue-500/20 p-3 rounded-lg text-xs mb-3">
+                        <div class="font-bold text-white flex justify-between items-center mb-1">
+                            <span>Sovereign Orchestrator</span>
+                            <span class="text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">ADK Agent</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400">Gemini 3.5 Flash / system-instructions bound</span>
+                    </div>
+
+                    <div class="space-y-1.5 pl-3 border-l-2 border-slate-800">
+                        <div class="text-[11px] bg-slate-900/50 p-1.5 rounded border border-slate-800 flex justify-between">
+                            <span class="text-slate-300">Balance Sheet Sub-Agent</span>
+                            <span class="text-slate-500">A2A</span>
+                        </div>
+                        <div class="text-[11px] bg-slate-900/50 p-1.5 rounded border border-slate-800 flex justify-between">
+                            <span class="text-slate-300">Solvency Warning Sub-Agent</span>
+                            <span class="text-slate-500">A2A</span>
+                        </div>
+                        <div class="text-[11px] bg-slate-900/50 p-1.5 rounded border border-slate-800 flex justify-between">
+                            <span class="text-slate-300">Sentiment Scraper Sub-Agent</span>
+                            <span class="text-slate-500">A2A</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-[10px] text-slate-500 mt-4 border-t border-slate-900 pt-3">
+                    Active State Preservation via LangGraph State
+                </div>
+            </div>
+
+            <!-- LAYER 3: QUALITY CONTROL / SHADOW AUDIT -->
+            <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center space-x-2 text-rose-500 mb-4">
+                        <span class="flex h-2 w-2 rounded-full bg-rose-500 pulse-dot"></span>
+                        <h2 class="font-bold text-sm tracking-wider uppercase text-rose-500">03. Shadow Auditing</h2>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4">LangGraph Self-Correction loops executing automated compliance and fact-checks.</p>
+                    
+                    <div class="bg-rose-950/20 border border-rose-500/30 p-3.5 rounded-lg text-xs mb-4 text-center">
+                        <div class="font-bold text-rose-400 mb-1">LangGraph State Loop</div>
+                        <span class="text-[10px] text-slate-400">Gather ➔ Analyze ➔ Audit ➔ Self-Correct</span>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs space-y-1">
+                        <div class="font-semibold text-slate-300">Audit Rule-Check:</div>
+                        <div class="text-[10px] text-slate-400">1. Verification against raw MCP values</div>
+                        <div class="text-[10px] text-slate-400">2. Real-time grounding consistency checks</div>
+                    </div>
+                </div>
+                <div class="text-[10px] text-slate-500 mt-4 border-t border-slate-900 pt-3">
+                    Max 3 Iterations Loop prior to generation
+                </div>
+            </div>
+
+            <!-- LAYER 4: STATE, PERSISTENCE & ASSETS -->
+            <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center space-x-2 text-emerald-400 mb-4">
+                        <span class="flex h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
+                        <h2 class="font-bold text-sm tracking-wider uppercase text-emerald-400">04. Assetization</h2>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4">Storing session contexts & packing human expert inputs into verifiable Risk-Data Assets.</p>
+                    
+                    <div class="space-y-2">
+                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs">
+                            <div class="font-bold text-slate-300 mb-1">Google Cloud Firestore</div>
+                            <span class="text-[10px] text-slate-500">Cross-session context memory</span>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs">
+                            <div class="font-bold text-slate-300 mb-1">Human-In-The-Loop Data</div>
+                            <span class="text-[10px] text-slate-500 font-semibold text-emerald-500">RDA Data Asset Factory</span>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs">
+                            <div class="font-bold text-slate-300 mb-1">Vertex AI Unified Trace</div>
+                            <span class="text-[10px] text-slate-500">100% compliant proof-of-lineage</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-[10px] text-slate-500 mt-4 border-t border-slate-900 pt-3">
+                    Compliant base for future DeFi RWA issuance
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Flow lines visual aid (HTML Grid Connection Indicator) -->
+        <div class="mt-8 pt-4 border-t border-slate-800 flex justify-between items-center text-xs text-slate-500">
+            <div>
+                <span>* Active Integrations: </span>
+                <span class="text-slate-300 code-font ml-2">FastMCP Client ➔ A2A Mesh Router ➔ Shadow Audit ➔ Firestore ➔ RDA Output</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-sky-400 mr-1"></span> Data</span>
+                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-blue-400 mr-1"></span> Orchestrator</span>
+                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-rose-500 mr-1"></span> Quality</span>
+                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-emerald-400 mr-1"></span> Assets</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

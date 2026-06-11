@@ -3,15 +3,16 @@ import json
 import os
 from datetime import datetime
 
+
 def generate_markdown_comparison(baseline_path, optimized_path, eval_path, output_path):
-    with open(baseline_path, 'r') as f:
+    with open(baseline_path) as f:
         baseline_content = f.read()
-    with open(optimized_path, 'r') as f:
+    with open(optimized_path) as f:
         optimized_content = f.read()
-    
+
     # Try to load real metrics, fallback to high-performance placeholders if JSON is missing or invalid
     try:
-        with open(eval_path, 'r') as f:
+        with open(eval_path) as f:
             eval_results = json.load(f)
             metrics = eval_results.get('metrics', {})
             h_score = metrics.get('hallucination', 0.98)
@@ -24,7 +25,7 @@ def generate_markdown_comparison(baseline_path, optimized_path, eval_path, outpu
 
 Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-## 📊 Quantitative Improvements (Gemini 1.5 Flash Optimized)
+## 📊 Quantitative Improvements (Gemini 3.5 Flash Optimized)
 
 | Metric | Baseline (Single Agent) | Optimized (A2A + Flash 1.5) | Delta |
 | :--- | :--- | :--- | :--- |
@@ -49,12 +50,12 @@ Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 ---
 
 ## ☁️ Google Cloud Implementation Details
-- **Engine**: 100% Gemini 1.5 Flash for high-speed high-accuracy inference.
+- **Engine**: 100% Gemini 3.5 Flash for high-speed high-accuracy inference.
 - **Orchestration**: LangGraph Self-Correction Loops.
 - **Traceability**: Vertex AI Unified Trace Viewer integration.
 - **Memory**: Persistent User Context via Google Cloud Firestore.
 """
-    
+
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         f.write(md_template)

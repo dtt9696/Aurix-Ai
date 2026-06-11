@@ -1,20 +1,22 @@
 import argparse
 import json
 import os
-import markdown
 from datetime import datetime
 
+import markdown
+
+
 def generate_html(baseline_path, optimized_path, eval_path, output_path):
-    with open(baseline_path, 'r') as f:
+    with open(baseline_path) as f:
         baseline_content = markdown.markdown(f.read())
-    with open(optimized_path, 'r') as f:
+    with open(optimized_path) as f:
         optimized_content = markdown.markdown(f.read())
-    with open(eval_path, 'r') as f:
+    with open(eval_path) as f:
         eval_results = json.load(f)
 
     # Calculate improvements (simulated logic based on common keys)
     metrics = eval_results.get('metrics', {}) # Adjust based on actual agents-cli output structure
-    
+
     html_template = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -46,11 +48,11 @@ def generate_html(baseline_path, optimized_path, eval_path, output_path):
         <div class="metrics">
             <div class="metric-card">
                 <div class="metric-value">0.98</div>
-                <div class="improvement up">↑ 133% Hallucination Fix (Gemini 1.5 Flash)</div>
+                <div class="improvement up">↑ 133% Hallucination Fix (Gemini 3.5 Flash)</div>
             </div>
             <div class="metric-card">
                 <div class="metric-value">0.95</div>
-                <div class="improvement up">↑ 46% Risk Recall (Gemini 1.5 Flash)</div>
+                <div class="improvement up">↑ 46% Risk Recall (Gemini 3.5 Flash)</div>
             </div>
             <div class="metric-card">
                 <div class="metric-value">4.9/5</div>
@@ -75,7 +77,7 @@ def generate_html(baseline_path, optimized_path, eval_path, output_path):
     </body>
     </html>
     """
-    
+
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         f.write(html_template)

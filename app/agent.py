@@ -16,46 +16,106 @@ from app.app_utils.mcp_loader import MCPToolManager
 from app.app_utils.a2a_wrapper import agent_capability
 
 # --- Init GCP ---
-_, project_id = google.auth.default()
+project_id = "aurix-ai-489816"
 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
 db = firestore.Client(project=project_id)
 storage_client = storage.Client(project=project_id)
 
+from google.adk.models import Gemini as ADKGemini
+from google.genai import Client, types
+from functools import cached_property
+
+# --- Custom Gemini to support Vertex AI ---
+class Gemini(ADKGemini):
+    @cached_property
+    def api_client(self) -> Client:
+        # 强制使用 Vertex AI，并指定项目和位置
+        return Client(vertexai=True, project=project_id, location=DEFAULT_LOCATION)
+
+    def generate_content_async(self, llm_request: Any, **kwargs: Any) -> Any:
+        return super().generate_content_async(llm_request, **kwargs)
+
+    def generate_content(self, llm_request: Any, **kwargs: Any) -> Any:
+        return super().generate_content(llm_request, **kwargs)
+
 # --- Standardized Model: Gemini 3.5 Flash ---
 DEFAULT_MODEL = "gemini-3.5-flash"
+DEFAULT_LOCATION = "us-central1"
 
 # --- MCP Tool Loading ---
 mcp_manager = MCPToolManager()
+_mcp_initialized = False
 
-async def setup_mcp_tools():
-    """Dynamically connects all required MCP servers."""
-    await mcp_manager.connect_server("financial", "python3", ["app/mcp_servers/financial/server.py"])
-    await mcp_manager.connect_server("legal", "python3", ["app/mcp_servers/legal/server.py"])
-    await mcp_manager.connect_server("news", "python3", ["app/mcp_servers/news_personnel/server.py"])
-    return await mcp_manager.get_all_tools()
-
-mcp_tools = asyncio.run(setup_mcp_tools())
+async def init_mcp():
+    global _mcp_initialized
+    if _mcp_initialized:
+        return
+    try:
+        import sys
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        await mcp_manager.connect_server(
+            "financial", 
+            sys.executable, 
+            [os.path.join(current_dir, "mcp_servers/financial/server.py")]
+        )
+        await mcp_manager.connect_server(
+            "legal", 
+            sys.executable, 
+            [os.path.join(current_dir, "mcp_servers/legal/server.py")]
+        )
+        await mcp_manager.connect_server(
+            "news", 
+            sys.executable, 
+            [os.path.join(current_dir, "mcp_servers/news_personnel/server.py")]
+        )
+        _mcp_initialized = True
+        print("Real MCP Services Enabled.")
+    except Exception as e:
+        print(f"MCP Initialization Error: {e}")
 
 # --- Agent Capabilities (A2A Wrappers) ---
 
 @agent_capability("gather_data", "从 MCP 接入的数据源搜集指定公司的财务、法律及人事风险数据。")
-def gather_data_agent(company_name: str) -> str:
-    # 动态调用 MCP 工具
-    return json.dumps({
-        "ticker": "IRBT",
-        "financials": "revenue_growth: 12%",
-        "legal": "active_cases: 2",
-        "news": "latest_expansion: confirmed"
-    })
+async def gather_data_agent(company_name: str) -> str:
+    await init_mcp()
+    # 动态调用真实 MCP 工具
+    results = {}
+    
+    # Financial
+    if "financial" in mcp_manager.sessions:
+        try:
+            resp = await mcp_manager.sessions["financial"].call_tool("get_financial_overview", {"symbol": company_name})
+            results["financials"] = resp.content[0].text
+        except Exception as e:
+            results["financials_error"] = str(e)
+            
+    # Legal
+    if "legal" in mcp_manager.sessions:
+        try:
+            resp = await mcp_manager.sessions["legal"].call_tool("get_legal_litigation_history", {"company_name": company_name})
+            results["legal"] = resp.content[0].text
+        except Exception as e:
+            results["legal_error"] = str(e)
+
+    # News
+    if "news" in mcp_manager.sessions:
+        try:
+            resp = await mcp_manager.sessions["news"].call_tool("search_latest_news", {"query": company_name})
+            results["news"] = resp.content[0].text
+        except Exception as e:
+            results["news_error"] = str(e)
+
+    results["ticker"] = company_name
+    return json.dumps(results)
 
 @agent_capability("draft_report", "根据搜集的风险数据，草拟诊断报告段落。")
 def writer_agent(data_json: str) -> str:
     data = json.loads(data_json)
-    return f"Full Risk Report for {data['ticker']}: Financials {data['financials']}, Legal {data['legal']}."
+    return f"Full Risk Report for {data['ticker']}: Financials {data.get('financials', 'N/A')}, Legal {data.get('legal', 'N/A')}."
 
 @agent_capability("audit_report", "对报告进行严苛的结构化审计，检查幻觉、数学错误及一致性。")
 def auditor_agent(report: str, raw_data_json: str) -> str:
-    client = Client()
+    client = Client(vertexai=True, project=project_id, location=DEFAULT_LOCATION)
     audit_prompt = f"""
     您是一位独立的财务审计专家。请审计以下报告的逻辑一致性。
     [Raw Data]: {raw_data_json}
@@ -71,7 +131,7 @@ def auditor_agent(report: str, raw_data_json: str) -> str:
 
 @agent_capability("extract_assets", "抽取风险传导逻辑和特征，并将其存入知识资产数据库。")
 def extractor_agent(report: str, raw_data_json: str) -> str:
-    client = Client()
+    client = Client(vertexai=True, project=project_id, location=DEFAULT_LOCATION)
     extraction_prompt = f"""
     抽取风险传导逻辑和特征: {report}
     返回JSON: {{"risk_type": "...", "propagation_logic": "...", "risk_features": [...]}}
@@ -94,6 +154,8 @@ orchestrator = Agent(
     name="risk_diagnosis_orchestrator",
     model=Gemini(
         model=DEFAULT_MODEL,
+        project=project_id,
+        location=DEFAULT_LOCATION,
         system_instruction="Chief Architect of Enterprise Risk Diagnosis System. "
                            "你是自主的风险指挥官，利用你的能力自主编排工作流。",
     ),
@@ -104,7 +166,8 @@ orchestrator = Agent(
     3. 调用 audit_report 进行审计。如果失败，则根据修正指令重新调用 draft_report。
     4. 审计通过后，调用 extract_assets 存入知识库。
     """,
-    tools=[google_search, gather_data_agent, writer_agent, auditor_agent, extractor_agent] + mcp_tools,
+    tools=[gather_data_agent, writer_agent, auditor_agent, extractor_agent],
 )
 
-app = App(root_agent=orchestrator, name="app")
+root_agent = orchestrator
+app = App(root_agent=root_agent, name="app")

@@ -16,13 +16,13 @@ import os
 
 import google.auth
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from google.adk.cli.fast_api import get_fast_api_app
 from google.cloud import logging as google_cloud_logging
 
 from app.app_utils.telemetry import setup_telemetry
 from app.app_utils.typing import Feedback
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
 
 setup_telemetry()
 _, project_id = google.auth.default()
@@ -59,7 +59,7 @@ if os.path.exists(static_dir):
 async def serve_index():
     index_path = os.path.join(static_dir, "index.html")
     if os.path.exists(index_path):
-        with open(index_path, "r") as f:
+        with open(index_path) as f:
             return f.read()
     return "Frontend not found. Run 'npm run build' and copy to app/static."
 

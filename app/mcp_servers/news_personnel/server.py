@@ -1,6 +1,7 @@
-from mcp.server.fastmcp import FastMCP
-import json
 import datetime
+import json
+
+from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("NewsPersonnelServer")
 
