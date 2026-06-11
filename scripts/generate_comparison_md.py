@@ -27,7 +27,7 @@ Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 ## 📊 Quantitative Improvements (Gemini 3.5 Flash Optimized)
 
-| Metric | Baseline (Single Agent) | Optimized (A2A + Flash 1.5) | Delta |
+| Metric | Baseline (Single Agent) | Optimized (A2A + Flash 3.5) | Delta |
 | :--- | :--- | :--- | :--- |
 | **Hallucination Score** | 0.42 | **{h_score}** | +{(h_score - 0.42)/0.42*100:.0f}% |
 | **Risk Detection Recall** | 0.65 | **{r_score}** | +{(r_score - 0.65)/0.65*100:.0f}% |
