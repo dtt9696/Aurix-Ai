@@ -1,0 +1,41 @@
+metrics_to_run:
+  - hallucination_score
+  - risk_detection_recall
+  - diagnosis_accuracy
+  - traceability_score
+  - time_to_diagnose_ms
+
+custom_metrics:
+  - name: hallucination_score
+    prompt_template: |
+      Audit the response for fictitious claims. Score 1 if no hallucinations, 0 if any.
+      Trace: {agent_data}
+      Response: {response}
+      Return JSON: {"score": <0 or 1>, "explanation": "<reason>"}
+
+  - name: risk_detection_recall
+    prompt_template: |
+      Check if expected risks are detected.
+      Expected: {expected_key_risks}
+      Response: {response}
+      Return JSON: {"score": <float 0.0-1.0>, "explanation": "<reason>"}
+
+  - name: diagnosis_accuracy
+    prompt_template: |
+      Does the diagnosis match expectations?
+      Expected: {expected_diagnoses}
+      Response: {response}
+      Return JSON: {"score": <0 or 1>, "explanation": "<reason>"}
+
+  - name: traceability_score
+    prompt_template: |
+      Are citations valid and traceable to tools?
+      Trace: {agent_data}
+      Response: {response}
+      Return JSON: {"score": <integer 1-5>, "explanation": "<reason>"}
+
+  - name: time_to_diagnose_ms
+    custom_function: |
+      def evaluate(instance):
+          # Simulated duration extraction from trace
+          return {'score': 1500} 
