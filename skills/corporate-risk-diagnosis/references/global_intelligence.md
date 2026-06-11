@@ -1,6 +1,6 @@
 # Global Intelligence & Human Capital Domains
 
-## 1. Global Equity & Structure (股权结构)
+## 1. Global Equity & Structure (Equity Structure)
 - **Source**: B2Bhint, EODHD, Financial Datasets.
 - **Key Data**: Parent-subsidiary mappings, ultimate beneficial owners (UBO), joint ventures.
 - **Risk Indicator**: Obfuscated ownership in high-risk jurisdictions, cross-border equity leakage.
@@ -20,7 +20,7 @@
 - **Key Data**: Physical address verification, facility foot-traffic (simulated/sentiment), local environment risk.
 - **Risk Indicator**: 'Ghost' headquarters (shell companies), facility proximity to high-risk zones (fire/flood/geopolitical).
 
-## 5. Sentiment & Public Opinion (舆情)
+## 5. Sentiment & Public Opinion (Public Sentiment)
 - **Source**: Sentiment Analysis MCP, GNews Sentiment.
 - **Key Data**: News polarity, emotional shifts in social media, Glassdoor-style employee feedback.
 - **Risk Indicator**: Sharp spike in 'Fear' or 'Disgust' emotions in recent media coverage.

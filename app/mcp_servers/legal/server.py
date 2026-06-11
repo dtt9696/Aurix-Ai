@@ -7,7 +7,7 @@ mcp = FastMCP("LegalComplianceServer")
 
 @mcp.tool()
 def get_legal_litigation_history(company_name: str) -> str:
-    """查询公司法律诉讼历史 (含追溯元数据)"""
+    """Query corporate legal litigation history (including traceability metadata)"""
     data = {
         "results": {"active_cases": 2, "recent_filings": ["Case 2026-CV-00123"]},
         "metadata": {
@@ -20,7 +20,7 @@ def get_legal_litigation_history(company_name: str) -> str:
 
 @mcp.tool()
 def check_ofac_sanctions(company_name: str) -> str:
-    """查询OFAC制裁名单 (含追溯元数据)"""
+    """Query OFAC sanctions list (including traceability metadata)"""
     data = {
         "is_sanctioned": False,
         "metadata": {

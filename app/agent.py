@@ -29,7 +29,7 @@ from functools import cached_property
 class Gemini(ADKGemini):
     @cached_property
     def api_client(self) -> Client:
-        # 强制使用 Vertex AI，并指定项目和位置
+        # Force usage of Vertex AI, specifying project and location
         return Client(vertexai=True, project=project_id, location=DEFAULT_LOCATION)
 
     def generate_content_async(self, llm_request: Any, **kwargs: Any) -> Any:
@@ -75,10 +75,10 @@ async def init_mcp():
 
 # --- Agent Capabilities (A2A Wrappers) ---
 
-@agent_capability("gather_data", "从 MCP 接入的数据源搜集指定公司的财务、法律及人事风险数据。")
+@agent_capability("gather_data", "Collect financial, legal, and personnel risk data for a specified company from MCP-connected data sources.")
 async def gather_data_agent(company_name: str) -> str:
     await init_mcp()
-    # 动态调用真实 MCP 工具
+    # Dynamically call actual MCP tools
     results = {}
     
     # Financial
@@ -108,19 +108,19 @@ async def gather_data_agent(company_name: str) -> str:
     results["ticker"] = company_name
     return json.dumps(results)
 
-@agent_capability("draft_report", "根据搜集的风险数据，草拟诊断报告段落。")
+@agent_capability("draft_report", "Draft diagnostic report sections based on collected risk data.")
 def writer_agent(data_json: str) -> str:
     data = json.loads(data_json)
     return f"Full Risk Report for {data['ticker']}: Financials {data.get('financials', 'N/A')}, Legal {data.get('legal', 'N/A')}."
 
-@agent_capability("audit_report", "对报告进行严苛的结构化审计，检查幻觉、数学错误及一致性。")
+@agent_capability("audit_report", "Perform rigorous structural auditing of the report, checking for hallucinations, mathematical errors, and consistency.")
 def auditor_agent(report: str, raw_data_json: str) -> str:
     client = Client(vertexai=True, project=project_id, location=DEFAULT_LOCATION)
     audit_prompt = f"""
-    您是一位独立的财务审计专家。请审计以下报告的逻辑一致性。
+    You are an independent financial audit expert. Please audit the logical consistency of the following report.
     [Raw Data]: {raw_data_json}
     [Report]: {report}
-    返回JSON: {{"verdict": "PASSED"|"FAILED", "corrections": [...]}}
+    Return JSON: {{"verdict": "PASSED"|"FAILED", "corrections": [...]}}
     """
     response = client.models.generate_content(
         model=DEFAULT_MODEL,
@@ -129,12 +129,12 @@ def auditor_agent(report: str, raw_data_json: str) -> str:
     )
     return response.text
 
-@agent_capability("extract_assets", "抽取风险传导逻辑和特征，并将其存入知识资产数据库。")
+@agent_capability("extract_assets", "Extract risk propagation logic and features, and store them in the knowledge asset database.")
 def extractor_agent(report: str, raw_data_json: str) -> str:
     client = Client(vertexai=True, project=project_id, location=DEFAULT_LOCATION)
     extraction_prompt = f"""
-    抽取风险传导逻辑和特征: {report}
-    返回JSON: {{"risk_type": "...", "propagation_logic": "...", "risk_features": [...]}}
+    Extract risk propagation logic and features: {report}
+    Return JSON: {{"risk_type": "...", "propagation_logic": "...", "risk_features": [...]}}
     """
     response = client.models.generate_content(
         model=DEFAULT_MODEL,
@@ -157,14 +157,14 @@ orchestrator = Agent(
         project=project_id,
         location=DEFAULT_LOCATION,
         system_instruction="Chief Architect of Enterprise Risk Diagnosis System. "
-                           "你是自主的风险指挥官，利用你的能力自主编排工作流。",
+                           "You are an autonomous Risk Commander, utilizing your capabilities to orchestrate workflows independently.",
     ),
     instruction="""
-    自主执行以下任务：
-    1. 调用 gather_data 获取数据。
-    2. 调用 draft_report 草拟报告。
-    3. 调用 audit_report 进行审计。如果失败，则根据修正指令重新调用 draft_report。
-    4. 审计通过后，调用 extract_assets 存入知识库。
+    Independently execute the following tasks:
+    1. Call gather_data to retrieve information.
+    2. Call draft_report to draft the report.
+    3. Call audit_report for auditing. If it fails, re-call draft_report based on the correction instructions.
+    4. Upon successful audit, call extract_assets to store findings in the knowledge base.
     """,
     tools=[gather_data_agent, writer_agent, auditor_agent, extractor_agent],
 )

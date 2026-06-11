@@ -14,7 +14,7 @@ Generated at: 2026-06-10 08:55:44
 
 ## 📉 Baseline Report (Historical)
 ```markdown
-### 请将您优化前的 iRobot 风险报告内容复制粘贴到这里，作为基准对比。
+### Please copy and paste the content of your pre-optimization iRobot risk report here, as a baseline for comparison.
 
 ```
 

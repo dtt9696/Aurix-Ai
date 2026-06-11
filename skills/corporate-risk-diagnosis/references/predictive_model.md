@@ -1,6 +1,6 @@
 # Accounts Receivable (AR) Default Prediction Model
 
-## 1. Core Predictive Indicators (对标 Palantir/C3)
+## 1. Core Predictive Indicators (Benchmarking Palantir/C3)
 - **DSO (Days Sales Outstanding)**: Trend analysis of payment delays.
 - **Credit Score Volatility**: Real-time monitoring of corporate credit rating shifts.
 - **Sentiment Shift**: Negative news in legal or financial domains (from MCP sources).

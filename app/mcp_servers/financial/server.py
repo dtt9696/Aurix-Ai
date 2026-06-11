@@ -7,7 +7,7 @@ mcp = FastMCP("FinancialDataServer")
 
 @mcp.tool()
 def get_financial_overview(symbol: str) -> str:
-    """获取企业财务概览 (含追溯元数据)"""
+    """Retrieve corporate financial overview (including traceability metadata)"""
     data = {
         "metrics": {"revenue_growth": "12%", "debt_to_equity": "0.5"},
         "metadata": {
@@ -20,7 +20,7 @@ def get_financial_overview(symbol: str) -> str:
 
 @mcp.tool()
 def get_economic_indicator(indicator_name: str) -> str:
-    """获取 FRED 宏观经济指标 (含追溯元数据)"""
+    """Retrieve FRED macroeconomic indicators (including traceability metadata)"""
     data = {
         "value": "3.5%",
         "metadata": {

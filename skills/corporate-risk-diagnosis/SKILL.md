@@ -9,7 +9,7 @@ This skill guides the agent through the end-to-end process of corporate risk dia
 
 ## Workflow
 
-1.  **Entity Resolution**: Use `google_search` to map fuzzy names (e.g., "英伟达") to official US legal names and tickers (e.g., "NVIDIA Corporation (NVDA)").
+1.  **Entity Resolution**: Use `google_search` to map fuzzy names (e.g., "Nvidia") to official US legal names and tickers (e.g., "NVIDIA Corporation (NVDA)").
 2.  **Multidimensional Data Collection**: Refer to [references/risk_domains.md](references/risk_domains.md) for data sources and metrics.
 3.  **Automated Audit**: 
     *   Compare the retrieved financial metrics against the generated conclusions.

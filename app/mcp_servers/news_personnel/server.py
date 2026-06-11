@@ -7,7 +7,7 @@ mcp = FastMCP("NewsPersonnelServer")
 
 @mcp.tool()
 def search_latest_news(query: str) -> str:
-    """查询最新舆情新闻 (含追溯元数据)"""
+    """Query latest public opinion news (including traceability metadata)"""
     data = {
         "articles": [{"title": f"{query} expansion", "source": "NewsCorp"}],
         "metadata": {
@@ -20,7 +20,7 @@ def search_latest_news(query: str) -> str:
 
 @mcp.tool()
 def get_h1b_visa_trends(company_name: str) -> str:
-    """查询 H1B 签证申请趋势 (含追溯元数据)"""
+    """Query H1B visa application trends (including traceability metadata)"""
     data = {
         "recent_applications": 15,
         "metadata": {

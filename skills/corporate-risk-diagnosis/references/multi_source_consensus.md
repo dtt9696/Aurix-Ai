@@ -8,13 +8,13 @@ To ensure data integrity and prevent single-point-of-failure or hallucination, t
 - **Consensus**: Yahoo Finance / Google Finance (Real-time pricing, consensus estimates).
 - **Verification Rule**: Compare Revenue/Net Income across SEC filings and third-party aggregators.
 
-## 2. Judicial & Litigation (司法涉诉)
+## 2. Judicial & Litigation (Litigation)
 - **Primary**: CourtListener (RECAP) - Federal dockets and opinions.
 - **Secondary**: PACER (via `companylens-mcp`) - Direct federal court access.
 - **Consensus**: Law360 / Justia (via `google_search`) - Legal news and case summaries.
 - **Verification Rule**: Confirm case status and case numbers across at least two legal databases.
 
-## 3. Sanctions & Compliance (制裁/合规)
+## 3. Sanctions & Compliance (Sanctions/Compliance)
 - **Primary**: OFAC (US Treasury) SDN/SSI Lists.
 - **Secondary**: OpenSanctions (via `companylens-mcp`) - Global sanctions and PEP check.
 - **Consensus**: UN/EU Sanctions Lists (Cross-border compliance check).
