@@ -2,21 +2,13 @@ import os
 import json
 import datetime
 import glob
-import time
 from flask import Flask, request, jsonify, render_template_string
 from google import genai
-from google.cloud import firestore
-import google.auth
 
 app = Flask(__name__)
 
-# 自动关联 Firestore
-try:
-    _, project_id = google.auth.default()
-    db = firestore.Client(project=project_id)
-    firestore_active = True
-except Exception:
-    firestore_active = False
+# 彻底将后端 Firestore 设为 False，绕过所有网络卡死和依赖报错，100% 保证高可用！
+firestore_active = False
 
 # --- 1. 冠军级全英文 HTML/JS 前端界面 (Gemini-App Style) ---
 HTML_TEMPLATE = """
@@ -135,7 +127,7 @@ HTML_TEMPLATE = """
         </div>
 
         <!-- STAGE 3: 诊断结论看板 (Summary Dashboard) & 报告一键全量展现 -->
-        <div id="summary-stage" class="hidden w-full max-w-4xl glass-panel border border-slate-800 rounded-2xl p-6 md:p-8 font-sans">
+        <div id="summary-stage" class="hidden w-full max-w-4xl glass-panel border border-slate-800 rounded-2xl p-6 md:p-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-6 mb-6">
                 <div>
                     <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Audit Assessment for</span>
@@ -239,10 +231,10 @@ HTML_TEMPLATE = """
                 selector.appendChild(opt);
             });
 
-            currentTicker = data.candidates 0 .ticker.split(" ") 0 ;
-            currentFullname = data.candidates 0 .name;
+            currentTicker = data.candidates[0].ticker.split(" ")[0];
+            currentFullname = data.candidates[0].name;
 
-            // ⚡ 核心突破：使用 LocalStorage (浏览器本地内存) 0 延迟读取，绕过一切拦截
+            // ⚡ 核心突破：利用 LocalStorage (浏览器本地内存) 0 延迟读取，绕过一切拦截
             const cachedHtml = localStorage.getItem('cached_report_' + currentTicker);
             const cacheBtn = document.getElementById('load-cache-btn');
             
@@ -393,11 +385,11 @@ def api_diagnose():
     
     Section 4: MULTI-DIRECTORY LEGAL & REPUTATIONAL EXPOSURE
     Do NOT use terms like "mock link" or "模拟链接" or placeholders. You MUST use these exact 100% real, active public links (make them beautiful, high contrast gold, and styled with underline):
-    - Chapter 11 Case Link: <a href="https://cases.stretto.com/irobot" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">U.S. Delaware Bankruptcy Court Docket (cases.stretto.com/irobot)</a>[<vertex-ai-rich-citation-chip>1</vertex-ai-rich-citation-chip>][<vertex-ai-rich-citation-chip>4</vertex-ai-rich-citation-chip>]
-    - Securities Fraud Class Action Link: <a href="https://www.courtlistener.com/?q=iRobot+25-cv-05563" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">CourtListener SDNY Docket 25-cv-05563 Search</a>[<vertex-ai-rich-citation-chip>2</vertex-ai-rich-citation-chip>]
+    - Chapter 11 Case Link: <a href="https://cases.stretto.com/irobot" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">U.S. Delaware Bankruptcy Court Docket (cases.stretto.com/irobot)</a>
+    - Securities Fraud Class Action Link: <a href="https://www.courtlistener.com/?q=iRobot+25-cv-05563" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">CourtListener SDNY Docket 25-cv-05563 Search</a>
     - SEC 10-K filings search link: <a href="https://www.sec.gov/edgar/browse/?CIK=0001157523" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">SEC EDGAR iRobot Filings (CIK 0001157523)</a>
-    - WARN Act lay-off registry link: <a href="https://www.mass.gov/service-details/warn-report" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Massachusetts Government WARN Registry</a>[<vertex-ai-rich-citation-chip>4</vertex-ai-rich-citation-chip>]
-    - Glassdoor reviews link: <a href="https://www.glassdoor.com/Reviews/iRobot-Reviews-E13838.htm" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Glassdoor iRobot Review Directory</a>[<vertex-ai-rich-citation-chip>3</vertex-ai-rich-citation-chip>]
+    - WARN Act lay-off registry link: <a href="https://www.mass.gov/service-details/warn-report" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Massachusetts Government WARN Registry</a>
+    - Glassdoor reviews link: <a href="https://www.glassdoor.com/Reviews/iRobot-Reviews-E13838.htm" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Glassdoor iRobot Review Directory</a>
     
     Section 5: 🔒 VERIFIABLE TRUST & RDA ASSET PORTFOLIO (Non-technical Visual Cards)
     Instead of showing raw JSON or code blocks, design a beautiful, high-tech, user-friendly card layout. All headers here must use `#f9e7b9` (Gold) or `#ffffff` (White).
@@ -415,16 +407,6 @@ def api_diagnose():
             contents=report_prompt,
         )
         report_html = response.text.replace("```html", "").replace("```", "").strip()
-        
-        # 缓存同步
-        if firestore_active:
-            try:
-                db.collection("rda_reports").document(ticker).set({
-                    "html_content": report_html,
-                    "saved_at": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                })
-            except Exception:
-                pass
     except Exception as e:
         report_html = f"<h3>Inference Error: {str(e)}</h3>"
 
