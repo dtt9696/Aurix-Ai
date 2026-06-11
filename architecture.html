@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aurix AI - Technical Architecture Diagram</title>
+    <title>Aurix AI - Technical Architecture Blueprint</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
@@ -14,189 +14,220 @@
         .code-font {
             font-family: 'Fira Code', monospace;
         }
-        .glow-box {
+        .glow-card {
             position: relative;
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
-        .glow-box::after {
+        .glow-card::after {
             content: '';
             position: absolute;
             inset: -1px;
             background: linear-gradient(90deg, #3b82f6, #10b981);
             border-radius: 0.75rem;
             z-index: -1;
-            opacity: 0.4;
-            filter: blur(4px);
+            opacity: 0.3;
+            filter: blur(3px);
         }
-        .pulse-dot {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        /* Flow line dash animations */
+        .flow-line {
+            stroke-dasharray: 8, 8;
+            animation: dash 20s linear infinite;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .4; }
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
         }
     </style>
 </head>
-<body class="p-8 text-slate-200 min-h-screen flex flex-col items-center justify-center">
+<body class="p-4 md:p-8 text-slate-200 min-h-screen flex flex-col items-center justify-center">
 
     <!-- Main Container -->
-    <div class="max-w-6xl w-full bg-slate-900/80 border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+    <div class="max-w-6xl w-full bg-slate-900/80 border border-slate-800 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
         
         <!-- Background decorative grid -->
-        <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none"></div>
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25 pointer-events-none"></div>
 
         <!-- Header -->
-        <div class="flex justify-between items-start border-b border-slate-800 pb-6 mb-8 relative z-10">
+        <div class="flex flex-col md:flex-row justify-between items-start border-b border-slate-800 pb-6 mb-8 relative z-10">
             <div>
-                <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Active A2A Network</span>
+                <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Active A2A Network Mesh</span>
                 <h1 class="text-3xl font-extrabold tracking-tight text-white mt-3">Aurix AI — Technical Architecture</h1>
-                <p class="text-slate-400 text-sm mt-1">Multi-Agent Federated Network, Decoupled Tools via FastMCP & Self-Correcting Shadow Audit Loop</p>
+                <p class="text-slate-400 text-sm mt-1">Multi-Agent Pipeline: MCP Ingest ➔ A2A Extraction ➔ Audit Loop ➔ Risk Feature Extraction ➔ RDA Asset Storage</p>
             </div>
-            <div class="text-right">
-                <span class="text-xs text-slate-500 code-font">v1.5.0-championship</span>
-                <div class="text-xs text-slate-400 mt-1">Engine: <span class="text-blue-400 font-semibold">Gemini 3.5 Flash</span></div>
+            <div class="text-right mt-4 md:mt-0">
+                <span class="text-xs text-slate-500 code-font">v1.6.0-production</span>
+                <div class="text-xs text-slate-400 mt-1">Cognitive Engine: <span class="text-emerald-400 font-semibold">Gemini 3.5 Flash</span></div>
             </div>
         </div>
 
-        <!-- Grid Layout -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
-            
-            <!-- LAYER 1: DATA INGESTION (MCP) -->
-            <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center space-x-2 text-sky-400 mb-4">
-                        <span class="flex h-2 w-2 rounded-full bg-sky-400 pulse-dot"></span>
-                        <h2 class="font-bold text-sm tracking-wider uppercase text-sky-400">01. Data Ingestion</h2>
-                    </div>
-                    <p class="text-xs text-slate-400 mb-4">Heterogeneous global data unified into clean context streams via FastMCP protocol.</p>
-                    
-                    <div class="space-y-2">
-                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs flex justify-between items-center">
-                            <span class="font-semibold text-slate-300">SEC EDGAR API</span>
-                            <span class="text-[10px] text-sky-400 code-font">mcp-tool</span>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs flex justify-between items-center">
-                            <span class="font-semibold text-slate-300">FRED Reserve DB</span>
-                            <span class="text-[10px] text-sky-400 code-font">mcp-tool</span>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs flex justify-between items-center">
-                            <span class="font-semibold text-slate-300">WARN Act Registry</span>
-                            <span class="text-[10px] text-sky-400 code-font">mcp-tool</span>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs flex justify-between items-center">
-                            <span class="font-semibold text-slate-300">Google Search</span>
-                            <span class="text-[10px] text-emerald-400 code-font">grounding</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-[10px] text-slate-500 mt-4 border-t border-slate-900 pt-3">
-                    Active Sandbox & SEC Live Modes Supported
-                </div>
-            </div>
+        <!-- Interactive SVG Canvas with Embedded styled HTML cards -->
+        <div class="relative w-full overflow-x-auto min-w-[950px] z-10">
+            <svg class="w-full h-[650px]" viewBox="0 0 1000 650" fill="none" xmlns="http://www.w3.org/2000/svg">
+                
+                <!-- Markers for glowing arrowheads -->
+                <defs>
+                    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6"/>
+                    </marker>
+                    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
+                    </marker>
+                    <marker id="arrow-rose" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#f43f5e"/>
+                    </marker>
+                </defs>
 
-            <!-- LAYER 2: DYNAMIC A2A ORCHESTRATION -->
-            <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl glow-box flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center space-x-2 text-blue-400 mb-4">
-                        <span class="flex h-2 w-2 rounded-full bg-blue-400 pulse-dot"></span>
-                        <h2 class="font-bold text-sm tracking-wider uppercase text-blue-400">02. A2A Orchestrator</h2>
-                    </div>
-                    <p class="text-xs text-slate-400 mb-4">ADK-powered sovereign brain routing tasks dynamically between sub-agents.</p>
-                    
-                    <div class="bg-slate-900 border border-blue-500/20 p-3 rounded-lg text-xs mb-3">
-                        <div class="font-bold text-white flex justify-between items-center mb-1">
-                            <span>Sovereign Orchestrator</span>
-                            <span class="text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">ADK Agent</span>
-                        </div>
-                        <span class="text-[10px] text-slate-400">Gemini 3.5 Flash / system-instructions bound</span>
-                    </div>
+                <!-- 1. Orchestrator -> A2A Registry (Invoke) -->
+                <path d="M 500,90 L 500,135" stroke="#1e293b" stroke-width="3" />
+                <path class="flow-line" d="M 500,90 L 500,135" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue)" />
 
-                    <div class="space-y-1.5 pl-3 border-l-2 border-slate-800">
-                        <div class="text-[11px] bg-slate-900/50 p-1.5 rounded border border-slate-800 flex justify-between">
-                            <span class="text-slate-300">Balance Sheet Sub-Agent</span>
-                            <span class="text-slate-500">A2A</span>
-                        </div>
-                        <div class="text-[11px] bg-slate-900/50 p-1.5 rounded border border-slate-800 flex justify-between">
-                            <span class="text-slate-300">Solvency Warning Sub-Agent</span>
-                            <span class="text-slate-500">A2A</span>
-                        </div>
-                        <div class="text-[11px] bg-slate-900/50 p-1.5 rounded border border-slate-800 flex justify-between">
-                            <span class="text-slate-300">Sentiment Scraper Sub-Agent</span>
-                            <span class="text-slate-500">A2A</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-[10px] text-slate-500 mt-4 border-t border-slate-900 pt-3">
-                    Active State Preservation via LangGraph State
-                </div>
-            </div>
+                <!-- 2. MCP -> A2A (Ingest Route) -->
+                <path d="M 180,270 C 180,240 380,200 380,180" stroke="#1e293b" stroke-width="3" />
+                <path class="flow-line" d="M 180,240 C 180,210 380,200 380,180" stroke="#60a5fa" stroke-width="2" marker-start="url(#arrow-blue)" />
 
-            <!-- LAYER 3: QUALITY CONTROL / SHADOW AUDIT -->
-            <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center space-x-2 text-rose-500 mb-4">
-                        <span class="flex h-2 w-2 rounded-full bg-rose-500 pulse-dot"></span>
-                        <h2 class="font-bold text-sm tracking-wider uppercase text-rose-500">03. Shadow Auditing</h2>
-                    </div>
-                    <p class="text-xs text-slate-400 mb-4">LangGraph Self-Correction loops executing automated compliance and fact-checks.</p>
-                    
-                    <div class="bg-rose-950/20 border border-rose-500/30 p-3.5 rounded-lg text-xs mb-4 text-center">
-                        <div class="font-bold text-rose-400 mb-1">LangGraph State Loop</div>
-                        <span class="text-[10px] text-slate-400">Gather ➔ Analyze ➔ Audit ➔ Self-Correct</span>
-                    </div>
+                <!-- 3. A2A Network -> Step 1 (Extract & Gatherer) -->
+                <path d="M 500,210 L 500,245" stroke="#1e293b" stroke-width="2.5" />
+                <path class="flow-line" d="M 500,210 L 500,245" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow-blue)" />
 
-                    <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs space-y-1">
-                        <div class="font-semibold text-slate-300">Audit Rule-Check:</div>
-                        <div class="text-[10px] text-slate-400">1. Verification against raw MCP values</div>
-                        <div class="text-[10px] text-slate-400">2. Real-time grounding consistency checks</div>
-                    </div>
-                </div>
-                <div class="text-[10px] text-slate-500 mt-4 border-t border-slate-900 pt-3">
-                    Max 3 Iterations Loop prior to generation
-                </div>
-            </div>
+                <!-- 4. Gather -> Analyze -->
+                <path d="M 440,285 L 530,285" stroke="#1e293b" stroke-width="2.5" />
+                <path class="flow-line" d="M 440,285 L 530,285" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#arrow-blue)" />
 
-            <!-- LAYER 4: STATE, PERSISTENCE & ASSETS -->
-            <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center space-x-2 text-emerald-400 mb-4">
-                        <span class="flex h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
-                        <h2 class="font-bold text-sm tracking-wider uppercase text-emerald-400">04. Assetization</h2>
-                    </div>
-                    <p class="text-xs text-slate-400 mb-4">Storing session contexts & packing human expert inputs into verifiable Risk-Data Assets.</p>
-                    
-                    <div class="space-y-2">
-                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs">
-                            <div class="font-bold text-slate-300 mb-1">Google Cloud Firestore</div>
-                            <span class="text-[10px] text-slate-500">Cross-session context memory</span>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs">
-                            <div class="font-bold text-slate-300 mb-1">Human-In-The-Loop Data</div>
-                            <span class="text-[10px] text-slate-500 font-semibold text-emerald-500">RDA Data Asset Factory</span>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-xs">
-                            <div class="font-bold text-slate-300 mb-1">Vertex AI Unified Trace</div>
-                            <span class="text-[10px] text-slate-500">100% compliant proof-of-lineage</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-[10px] text-slate-500 mt-4 border-t border-slate-900 pt-3">
-                    Compliant base for future DeFi RWA issuance
-                </div>
-            </div>
+                <!-- 5. Analyze/Gather -> Auditor Node -->
+                <path d="M 590,320 L 590,345" stroke="#1e293b" stroke-width="2.5" />
+                <path class="flow-line" d="M 590,320 L 590,345" stroke="#f43f5e" stroke-width="1.5" marker-end="url(#arrow-rose)" />
 
+                <!-- 6. Auditor -> Analyst (Correction Feedback Loop) -->
+                <path d="M 530,385 C 470,385 470,300 530,300" stroke="#1e293b" stroke-width="2.5" />
+                <path class="flow-line" d="M 530,385 C 470,385 470,300 530,300" stroke="#f43f5e" stroke-width="1.5" marker-end="url(#arrow-rose)" />
+
+                <!-- 7. Auditor -> Final Output -->
+                <path d="M 590,430 L 590,465" stroke="#1e293b" stroke-width="2.5" />
+                <path class="flow-line" d="M 590,430 L 590,465" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow-blue)" />
+
+                <!-- 8. Final Output -> Risk Feature Extractor -->
+                <path d="M 680,500 L 760,500" stroke="#1e293b" stroke-width="3" />
+                <path class="flow-line" d="M 680,500 L 760,500" stroke="#10b981" stroke-width="2" marker-end="url(#arrow-emerald)" />
+
+                <!-- 9. Risk Feature Extractor -> Firestore RDA Store -->
+                <path d="M 870,455 L 870,485" stroke="#1e293b" stroke-width="3" />
+                <path class="flow-line" d="M 870,455 L 870,485" stroke="#10b981" stroke-width="2" marker-end="url(#arrow-emerald)" />
+
+                <!-- Flow Labels Text -->
+                <text x="240" y="210" fill="#60a5fa" font-size="11" font-weight="bold" font-family="'Fira Code', monospace">Ingest Raw Context</text>
+                <text x="410" y="365" fill="#f43f5e" font-size="10" font-weight="bold" font-family="'Fira Code', monospace">Correction Loop</text>
+                <text x="690" y="490" fill="#10b981" font-size="10" font-weight="bold" font-family="'Fira Code', monospace">Distill Risk Vectors</text>
+
+                <!-- EMBEDDED HIGH-TECH CARDS (Nodes) -->
+                
+                <!-- NODE 1: ORCHESTRATOR -->
+                <foreignObject x="350" y="20" width="300" height="70">
+                    <div class="glow-card border border-blue-500/30 rounded-xl p-3 flex flex-col justify-center h-full">
+                        <div class="text-[9px] uppercase tracking-wider text-blue-400 font-bold code-font">01. Cognitive Core</div>
+                        <div class="text-white font-extrabold text-xs mt-0.5">Risk Diagnosis Orchestrator (Orchestrator)</div>
+                    </div>
+                </foreignObject>
+
+                <!-- NODE 2: MCP DATA LAYER -->
+                <foreignObject x="40" y="240" width="250" height="150">
+                    <div class="glow-card border border-cyan-500/30 rounded-xl p-4 flex flex-col justify-between h-full bg-slate-950/20">
+                        <div>
+                            <div class="text-[9px] uppercase tracking-wider text-cyan-400 font-bold code-font">Unified Data Bus</div>
+                            <div class="text-white font-extrabold text-xs mt-0.5">MCP Data Layer (20+ Sources)</div>
+                            <p class="text-[9px] text-slate-500 mt-1">Legally compliant raw data nodes directly fetched via FastMCP protocol.</p>
+                        </div>
+                        <div class="text-[8px] text-slate-400 border-t border-slate-800/80 pt-2 space-y-0.5">
+                            <div>• SEC EDGAR (Financials)</div>
+                            <div>• WARN Act, Glassdoor (Reputation)</div>
+                            <div>• CourtListener, OFAC (Compliance)</div>
+                        </div>
+                    </div>
+                </foreignObject>
+
+                <!-- NODE 3: A2A REGISTRY -->
+                <foreignObject x="350" y="140" width="300" height="70">
+                    <div class="glow-card border border-indigo-500/30 rounded-xl p-3 flex flex-col justify-center h-full bg-slate-950/40">
+                        <div class="text-[9px] uppercase tracking-wider text-indigo-400 font-bold code-font">02. Capability Mesh Network</div>
+                        <div class="text-white font-extrabold text-xs mt-0.5">A2A Capability Registry (多Agent架构)</div>
+                    </div>
+                </foreignObject>
+
+                <!-- NODE 4: GATHER DATA -->
+                <foreignObject x="290" y="250" width="150" height="70">
+                    <div class="glow-card border border-slate-700 rounded-xl p-3 flex flex-col justify-center h-full">
+                        <div class="text-[9px] text-sky-400 uppercase tracking-widest font-bold code-font">Agent A — Ingest</div>
+                        <div class="text-slate-200 font-bold text-xs mt-0.5">Extract & Gather Data</div>
+                    </div>
+                </foreignObject>
+
+                <!-- NODE 5: ANALYZE & SUMMARIZE -->
+                <foreignObject x="530" y="250" width="160" height="70">
+                    <div class="glow-card border border-slate-700 rounded-xl p-3 flex flex-col justify-center h-full">
+                        <div class="text-[9px] text-sky-400 uppercase tracking-widest font-bold code-font">Agent B — Intelligence</div>
+                        <div class="text-slate-200 font-bold text-xs mt-0.5">Analyze & Summarize</div>
+                    </div>
+                </foreignObject>
+
+                <!-- NODE 6: AUDIT REPORT -->
+                <foreignObject x="490" y="350" width="240" height="80">
+                    <div class="glow-card border border-rose-500/30 rounded-xl p-3 flex flex-col justify-between h-full">
+                        <div>
+                            <div class="text-[9px] text-rose-400 uppercase tracking-widest font-bold code-font">Agent C — Quality Control</div>
+                            <div class="text-white font-bold text-xs mt-0.5">Audit Report & Verification (审计)</div>
+                        </div>
+                        <div class="text-[8px] text-rose-400/80 flex items-center">
+                            <span class="h-1.5 w-1.5 bg-rose-500 rounded-full mr-1 pulse-dot"></span> LangGraph Self-Correction Guardrails
+                        </div>
+                    </div>
+                </foreignObject>
+
+                <!-- NODE 7: FINAL OUTPUT -->
+                <foreignObject x="500" y="465" width="180" height="70">
+                    <div class="glow-card border border-blue-500/30 rounded-xl p-3 flex flex-col justify-center h-full">
+                        <div class="text-[9px] text-blue-400 uppercase tracking-widest font-bold code-font">Agent D — Output</div>
+                        <div class="text-slate-200 font-bold text-xs mt-0.5">Final HTML/MD Report</div>
+                    </div>
+                </foreignObject>
+
+                <!-- NODE 8: RISK FEATURE EXTRACTOR -->
+                <foreignObject x="760" y="380" width="210" height="75">
+                    <div class="glow-card border border-emerald-500/30 rounded-xl p-3 flex flex-col justify-center h-full bg-emerald-950/5">
+                        <div class="text-[9px] text-emerald-400 uppercase tracking-widest font-bold code-font">Agent E — Asset Factory</div>
+                        <div class="text-slate-200 font-extrabold text-xs mt-0.5">Extract Risk Features (提取风险特征)</div>
+                    </div>
+                </foreignObject>
+
+                <!-- NODE 9: FIRESTORE ASSET DATABASE -->
+                <foreignObject x="760" y="490" width="210" height="110">
+                    <div class="glow-card border border-amber-500/30 rounded-xl p-3.5 flex flex-col justify-between h-full bg-amber-950/10">
+                        <div>
+                            <div class="text-[9px] text-amber-500 uppercase tracking-widest font-bold code-font">RDA Secure Storage</div>
+                            <div class="text-white font-extrabold text-xs mt-0.5">Google Cloud Firestore</div>
+                        </div>
+                        <div class="text-[8px] text-slate-500 border-t border-slate-800/80 pt-1 flex justify-between items-center">
+                            <span>SaaS Credit Ledger</span>
+                            <span class="text-amber-500 font-semibold">Risk Data Assets (RDA)</span>
+                        </div>
+                    </div>
+                </foreignObject>
+
+            </svg>
         </div>
 
-        <!-- Flow lines visual aid (HTML Grid Connection Indicator) -->
-        <div class="mt-8 pt-4 border-t border-slate-800 flex justify-between items-center text-xs text-slate-500">
+        <!-- Legend / Footer -->
+        <div class="mt-8 pt-4 border-t border-slate-800 flex justify-between items-center text-xs text-slate-500 z-10 relative">
             <div>
-                <span>* Active Integrations: </span>
-                <span class="text-slate-300 code-font ml-2">FastMCP Client ➔ A2A Mesh Router ➔ Shadow Audit ➔ Firestore ➔ RDA Output</span>
+                <span>* End-to-End Compliance Pipeline: </span>
+                <span class="text-slate-300 code-font ml-2">FastMCP Ingest ➔ A2A Extraction ➔ LangGraph Audit State ➔ Firestore Tokenizable RDA Sync</span>
             </div>
             <div class="flex items-center space-x-4">
-                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-sky-400 mr-1"></span> Data</span>
-                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-blue-400 mr-1"></span> Orchestrator</span>
-                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-rose-500 mr-1"></span> Quality</span>
-                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-emerald-400 mr-1"></span> Assets</span>
+                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-cyan-400 mr-1.5 pulse-dot"></span> Ingestion</span>
+                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-blue-400 mr-1.5 pulse-dot"></span> ADK A2A Mesh</span>
+                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-rose-500 mr-1.5 pulse-dot"></span> Shadow Audit</span>
+                <span class="flex items-center"><span class="h-2.5 w-2.5 rounded-full bg-amber-500 mr-1.5 pulse-dot"></span> RDA Store</span>
             </div>
         </div>
     </div>
