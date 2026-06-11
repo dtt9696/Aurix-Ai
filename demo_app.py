@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 firestore_active = False
 
-# --- 1. 100% 动态、防拦截、纯 HTTP 前端 (Gemini-App Style) ---
+# --- 1. 100% Dynamic, Anti-blocking, Pure HTTP Frontend (Gemini-App Style) ---
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -49,7 +49,7 @@ HTML_TEMPLATE = """
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between p-4 md:p-8">
 
-    <!-- 顶部标题 -->
+    <!-- Top Heading -->
     <div class="text-center mt-6 mb-4">
         <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-[#d4af37] to-[#f9e7b9] bg-clip-text text-transparent">
             Enterprise Risk Diagnosis Platform
@@ -59,10 +59,10 @@ HTML_TEMPLATE = """
         </p>
     </div>
 
-    <!-- 主展示区 -->
+    <!-- Main Display Area -->
     <div class="max-w-5xl w-full flex-grow flex flex-col items-center justify-center my-4">
         
-        <!-- STAGE 1: 搜索与模糊匹配 -->
+        <!-- STAGE 1: Search & Fuzzy Matching -->
         <div id="search-stage" class="w-full max-w-3xl text-center">
             <p class="text-slate-400 mb-8 text-base">Enter US Stock Ticker or Company Name to initiate real-time dynamic risk auditing:</p>
             
@@ -91,7 +91,7 @@ HTML_TEMPLATE = """
                 </button>
             </div>
 
-            <!-- 模糊匹配下拉确认区域 -->
+            <!-- Fuzzy Match Dropdown Confirmation Area -->
             <div id="resolution-area" class="hidden mt-8 text-left glass-panel border border-slate-800 rounded-2xl p-6">
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Fuzzy matches resolved. Confirm target entity:</label>
                 <select id="entity-selector" onchange="updateSelectedEntity(this)" class="w-full bg-[#121212] border border-slate-800 text-white rounded-xl p-3.5 focus:outline-none focus:border-[#d4af37] text-sm mb-6">
@@ -108,7 +108,7 @@ HTML_TEMPLATE = """
             </div>
         </div>
 
-        <!-- STAGE 2: 动态 A2A 7+1 智能体工作流日志 -->
+        <!-- STAGE 2: Dynamic A2A 7+1 Agent Workflow Logs -->
         <div id="running-stage" class="hidden w-full max-w-3xl glass-panel border border-[#d4af37]/20 rounded-2xl p-6 md:p-8">
             <div class="text-center border-b border-slate-800 pb-4 mb-6">
                 <h3 id="running-target-title" class="text-[#d4af37] font-bold text-lg">⚙️ Executing Audit Mesh</h3>
@@ -125,16 +125,16 @@ HTML_TEMPLATE = """
             </div>
         </div>
 
-        <!-- STAGE 3: 诊断结论看板 (Summary Dashboard) & 报告一键全量展现 -->
+        <!-- STAGE 3: Diagnosis Summary Dashboard & Full Report View -->
         <div id="summary-stage" class="hidden w-full max-w-4xl glass-panel border border-slate-800 rounded-2xl p-6 md:p-8 font-sans">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-6 mb-6">
                 <div>
                     <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Audit Assessment for</span>
-                    <!-- 100% 动态企业名称 -->
+                    <!-- 100% Dynamic Corporation Name -->
                     <h2 id="summary-target-title" class="text-white text-2xl font-extrabold mt-1">Target Corporation</h2>
                 </div>
                 <div class="mt-3 md:mt-0 text-left md:text-right">
-                    <!-- 100% 动态风险徽章 -->
+                    <!-- 100% Dynamic Risk Badge -->
                     <span id="risk-profile-badge" class="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">✔ Low Risk Profile</span>
                 </div>
             </div>
@@ -143,20 +143,20 @@ HTML_TEMPLATE = """
                 <!-- Score Card -->
                 <div class="bg-[#121212] border border-slate-800 p-6 rounded-xl text-center flex flex-col justify-center">
                     <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2">Overall Risk Score</div>
-                    <!-- 100% 动态总分数 -->
+                    <!-- 100% Dynamic Total Score -->
                     <div id="overall-score-display" class="text-5xl font-extrabold tracking-tight font-sans">85 <span class="text-xs text-slate-500">/ 100</span></div>
                 </div>
                 <!-- Core Takeaways -->
                 <div class="bg-[#121212] border border-slate-800 p-6 rounded-xl md:col-span-2">
                     <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-3">Key Executive Takeaways</div>
-                    <!-- 100% 动态高管要点总结列表 -->
+                    <!-- 100% Dynamic Executive Summary List -->
                     <ul id="takeaways-list" class="text-xs text-slate-400 space-y-2 list-disc pl-4 leading-relaxed">
                         <!-- Injected via JS -->
                     </ul>
                 </div>
             </div>
 
-            <!-- Sub Scores Grid (100% 动态子分数，根据级别自动变色) -->
+            <!-- Sub Scores Grid (100% Dynamic Sub-scores, automatically color-coded by severity) -->
             <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
                 <div class="bg-[#121212]/50 border border-slate-800 p-3 rounded-lg text-center">
                     <div class="text-[9px] text-slate-500 uppercase">Financial</div>
@@ -180,14 +180,14 @@ HTML_TEMPLATE = """
                 </div>
             </div>
 
-            <!-- ⚡ 黄金物理展示：报告全文在下方直接无缝渲染！ -->
+            <!-- ⚡ Golden Physical Display: Full report rendered seamlessly below! -->
             <div class="mt-8 pt-8 border-t border-slate-800">
                 <div id="injected-html-content" class="w-full bg-transparent overflow-hidden rounded-xl">
                     <!-- Live HTML Injected here directly! -->
                 </div>
             </div>
 
-            <!-- 重置按钮放到底部 -->
+            <!-- Reset button at the bottom -->
             <div class="mt-8 pt-6 border-t border-slate-800 flex justify-end">
                 <button onclick="resetDiagnosis()" class="bg-slate-900 border border-slate-800 text-slate-400 font-extrabold px-8 py-3.5 rounded-xl text-xs tracking-widest hover:bg-slate-800 transition-all">
                     🔍 NEW DIAGNOSIS
@@ -214,7 +214,7 @@ HTML_TEMPLATE = """
             resolveEntity();
         }
 
-        // 100% 机制免拦截模糊匹配
+        // 100% Anti-blocking mechanism for fuzzy matching
         async function resolveEntity() {
             const query = document.getElementById('company-input').value.trim();
             if (!query) return;
@@ -241,7 +241,7 @@ HTML_TEMPLATE = """
             document.getElementById('resolution-area').classList.remove('hidden');
         }
 
-        // 下拉菜单变换时，动态、实时同步 Ticker
+        // Dynamically and real-time sync Ticker when dropdown changes
         function updateSelectedEntity(selectObj) {
             const idx = selectObj.value;
             const c = candidatesList[idx];
@@ -250,7 +250,7 @@ HTML_TEMPLATE = """
             checkMemoryCache();
         }
 
-        // 提取 LocalStorage 缓存
+        // Extract LocalStorage cache
         function checkMemoryCache() {
             const cachedDataStr = localStorage.getItem('cached_data_v3_' + currentTicker);
             const cacheBtn = document.getElementById('load-cache-btn');
@@ -261,7 +261,7 @@ HTML_TEMPLATE = """
             }
         }
 
-        // 1秒免等、秒开缓存大报告（持久化记忆演示）
+        // Instant report loading from cache (Persistent memory demo)
         function loadCachedReport() {
             const cachedDataStr = localStorage.getItem('cached_data_v3_' + currentTicker);
             if (!cachedDataStr) return;
@@ -269,14 +269,14 @@ HTML_TEMPLATE = """
             renderDashboardWithData(data);
         }
 
-        // 根据数值大小，返回对应的安全红黄绿 CSS 颜色类
+        // Return corresponding CSS color class for safety (Red/Amber/Green) based on value
         function getScoreColorClass(score) {
             if (score >= 80) return "text-red-400";
             if (score >= 40) return "text-amber-500";
             return "text-emerald-400";
         }
 
-        // 用于将动态返回的数据，完美渲染注入到 DOM 节点的工具函数
+        // Utility function for perfectly rendering and injecting dynamic returned data into DOM
         function renderDashboardWithData(data) {
             document.getElementById('search-stage').classList.add('hidden');
             document.getElementById('running-stage').classList.add('hidden');
@@ -284,12 +284,12 @@ HTML_TEMPLATE = """
 
             document.getElementById('summary-target-title').innerText = data.fullname + " (" + data.ticker + ")";
             
-            // 总体风险评分动态填充，并按安全等级动态着色（红/黄/绿）
+            // Fill total risk score dynamically and color-code by safety level (Red/Amber/Green)
             const scoreColor = getScoreColorClass(data.scores.overall);
             document.getElementById('overall-score-display').className = "text-5xl font-extrabold tracking-tight font-sans " + scoreColor;
             document.getElementById('overall-score-display').innerHTML = data.scores.overall + ' <span class="text-xs text-slate-500">/ 100</span>';
             
-            // 动态设置风险徽章样式
+            // Dynamically set risk badge style
             const riskBadge = document.getElementById('risk-profile-badge');
             if (data.scores.overall >= 80) {
                 riskBadge.className = "text-[10px] text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20 font-bold uppercase tracking-wider";
@@ -302,7 +302,7 @@ HTML_TEMPLATE = """
                 riskBadge.innerText = "✔ Low Risk Profile";
             }
 
-            // 动态注入高管要点
+            // Dynamically inject executive summary takeaways
             const takeawaysList = document.getElementById('takeaways-list');
             takeawaysList.innerHTML = "";
             data.takeaways.forEach(item => {
@@ -311,7 +311,7 @@ HTML_TEMPLATE = """
                 takeawaysList.appendChild(li);
             });
 
-            // 动态注入子分数并按风险系数上色
+            // Dynamically inject sub-scores and color by risk factor
             const fCol = document.getElementById('score-financial');
             fCol.className = "text-sm font-bold mt-1 " + getScoreColorClass(data.scores.financial);
             fCol.innerText = data.scores.financial + " / 100";
@@ -332,11 +332,11 @@ HTML_TEMPLATE = """
             wCol.className = "text-sm font-bold mt-1 " + getScoreColorClass(data.scores.workforce);
             wCol.innerText = data.scores.workforce + " / 100";
 
-            // 注入报告 HTML
+            // Inject report HTML
             document.getElementById('injected-html-content').innerHTML = data.report_html;
         }
 
-        // 7+1 Agent A2A 动态工作流日志流光打字机效果
+        // 7+1 Agent A2A Dynamic Workflow Log Typewriter Effect
         async function startAudit() {
             document.getElementById('search-stage').classList.add('hidden');
             document.getElementById('running-stage').classList.remove('hidden');
@@ -363,7 +363,7 @@ HTML_TEMPLATE = """
             const tBox = document.getElementById('terminal-box');
             tBox.innerHTML = "";
 
-            // 动态流光打字机
+            // Dynamic typewriter effect
             for (let i = 0; i < logs.length; i++) {
                 let div = document.createElement('div');
                 div.className = 'text-xs md:text-sm font-mono text-[#d4af37] mb-1 leading-relaxed';
@@ -373,14 +373,14 @@ HTML_TEMPLATE = """
                 await new Promise(resolve => setTimeout(resolve, 300));
             }
 
-            // 发起 100% 免拦截的标准 HTTP AJAX 请求调用大模型
+            // Initiate standard HTTP AJAX request (100% anti-blocking) to call LLM
             const response = await fetch('/api/diagnose?company=' + encodeURIComponent(currentFullname) + '&ticker=' + encodeURIComponent(currentTicker));
             const data = await response.json();
 
-            // 缓存写入整个 JSON 数据包
+            // Write entire JSON data package to cache
             localStorage.setItem('cached_data_v3_' + currentTicker, JSON.stringify(data));
 
-            // 渲染数据
+            // Render data
             renderDashboardWithData(data);
         }
 
@@ -395,7 +395,7 @@ HTML_TEMPLATE = """
 </html>
 """
 
-# --- 2. 纯稳健标准 HTTP (Flask) 后端接口 ---
+# --- 2. Pure Robust Standard HTTP (Flask) Backend Interface ---
 
 @app.route('/')
 def index():
@@ -420,7 +420,7 @@ def api_diagnose():
     api_key = os.environ.get("GOOGLE_API_KEY")
     client = genai.Client(api_key=api_key, vertexai=False)
     
-    # 动态、严格隔离三家企业的数据，从物理上消除任何交叉感染风险
+    # Dynamically and strictly isolate data for the three companies, physically eliminating any risk of cross-contamination
     if "IRBT" in ticker or "IROBOT" in ticker:
         scores = {"overall": 85, "financial": 92, "supply_chain": 88, "legal": 85, "sentiment": 90, "workforce": 85}
         takeaways = [
@@ -429,7 +429,7 @@ def api_diagnose():
             "<strong>Talent Exodus</strong>: Core C-suite leadership flight (CEO, CFO, CHRO) coupled with massive 50% head-count downsizes."
         ]
         facts_prompt = f"""
-        - Bankruptcy: Filed for Chapter 11 bankruptcy (No. 25-12197) after Amazon's $1.4B acquisition failed. Acquired via debt-equity swap by Chinese OEM partner Shenzhen Picea Robotics (杉川机器人). Stock delisted.
+        - Bankruptcy: Filed for Chapter 11 bankruptcy (No. 25-12197) after Amazon's $1.4B acquisition failed. Acquired via debt-equity swap by Chinese OEM partner Shenzhen Picea Robotics. Stock delisted.
         - Solvency: Z-Score of -13.65 (Distress Zone). Piotroski F-Score of 3/9. Total liabilities: $350 Million, cash: $24.8 Million.
         - News Coverage: High news coverage on insolvency (Boston Globe, TheStreet, Fast Company).
         - Workforce: CEO Colin Angle, CFO Julie Zeiler, CHRO Russ Campanello resigned. Workforce cut by 50% (31% & 16% layoff rounds). Glassdoor dropped to D- (2.4/5.0).
@@ -481,9 +481,9 @@ def api_diagnose():
           * Glassdoor Apple Review Directory: <a href="https://www.glassdoor.com/Reviews/Apple-Reviews-E1138.htm" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Glassdoor Apple Reviews</a>
         """
 
-    # 🏆 冠军标准：全量 100% 真实外部合规与司法链接、五年财务与供应链趋势分析、黑金高对比度
-    # 新增模块：法律合规 (分立)、人员治理 (分立)、跨模块深度风险传导分析、多期风险预测、行动与应对建议。
-    # 重磅增加：数据准确性置信度、影子审计交叉验证效果描述
+    # 🏆 Champion Standard: 100% real external compliance and judicial links, 5-year financial & supply chain trend analysis, Black-Gold high contrast
+    # New modules: Legal Compliance (Separate), Workforce Governance (Separate), Cross-module deep risk propagation analysis, Multi-period risk forecasting, Mitigation recommendations.
+    # Major addition: Data accuracy confidence, Shadow audit cross-validation effect description
     report_prompt = f"""
     Generate a comprehensive, single-column corporate risk diagnosis report for "{company} ({ticker})" in clean HTML format.
     
@@ -494,7 +494,7 @@ def api_diagnose():
     1. Background color: `#050505` (rich deep dark, matching the dashboard perfectly). Text: `#d1d5db` (high legibility).
     2. Heading colors: Strictly use `#ffffff` or `#f9e7b9` (Champagne Gold). Do NOT use dark blue, grey, or any low-contrast dim colors for headings.
     3. Tables: Use sleek thin borders with `#d4af37/30`. Keep text crisp and distinct. All table headers must use `#f9e7b9` or white text against deep black.
-    4. Links: Every link must use the exact clickable anchor tag provided in the facts above. NEVER use placeholders or "(模拟链接)" or "(mock link)" text!
+    4. Links: Every link must use the exact clickable anchor tag provided in the facts above. NEVER use placeholders!
     
     The report MUST contain these exact sections:
     
@@ -509,25 +509,25 @@ def api_diagnose():
     Render a clean HTML table representing the supply chain metrics exactly as specified in the facts above.
     Provide an analytical summary of how supply chain structures affect the parent company.
     
-    Section 4: LEGAL & COMPLIANCE RISK (必须作为完全独立的模块展开)
+    Section 4: LEGAL & COMPLIANCE RISK
     Discuss litigation, dockets, regulatory issues, and anti-trust or bankruptcy cases. You MUST use the exact, active, clickable links provided in the facts above.
     
-    Section 5: WORKFORCE GOVERNANCE RISK (必须作为完全独立的模块展开)
+    Section 5: WORKFORCE GOVERNANCE RISK
     Discuss C-suite exodus, massive layoffs, retention history, and Glassdoor ratings. You MUST use the exact, active, clickable links provided in the facts above.
     
     Section 6: PUBLIC SENTIMENT MONITORING
     Analyze news coverage and media monitoring of insolvency or key corporate crises using the sources and links listed in the facts above.
     
-    Section 7: CROSS-MODULE RISK PROPAGATION ANALYSIS (跨模块深度风险传导分析)
+    Section 7: CROSS-MODULE RISK PROPAGATION ANALYSIS
     Detail how the financial distress directly flows into supply chain vulnerability, how reputational drops exacerbate executive flight risk, and how legal class actions amplify cash drain.
     
-    Section 8: MULTI-PERIOD RISK FORECASTING (风险预测)
+    Section 8: MULTI-PERIOD RISK FORECASTING
     Provide realistic 3-month, 6-month, and 12-month forward-looking risk trajectory predictions based on current structural issues.
     
-    Section 9: ACTIONABLE RECOMMENDATIONS & MITIGATION PATHS (行动与应对建议)
+    Section 9: ACTIONABLE RECOMMENDATIONS & MITIGATION PATHS
     Provide specific, high-value, actionable mitigation recommendations tailored for creditors, prospective partners, and risk managers.
     
-    Section 10: 🔒 VERIFIABLE TRUST & RDA ASSET PASSPORT (可验证的信托和RDA资产组合)
+    Section 10: 🔒 VERIFIABLE TRUST & RDA ASSET PASSPORT
     Design a beautiful, high-tech, user-friendly card layout. All headers here must use `#f9e7b9` (Gold) or `#ffffff` (White).
     Inside the card, create 4 stylized columns or metrics showcasing the verification trails, audit confidence, and distilled data asset features:
     - Column 1 (Evidence Ingestion Lineage & Confidence): Shows a checked badge '100% MATCHED' with 'Data Accuracy Confidence: 99.8%' based on cross-verification with SEC EDGAR filings.
