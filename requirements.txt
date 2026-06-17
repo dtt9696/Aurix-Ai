@@ -1,0 +1,5 @@
+flask
+google-genai
+google-cloud-firestore
+requests
+gunicorn

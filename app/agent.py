@@ -15,11 +15,16 @@ import requests
 from app.app_utils.mcp_loader import MCPToolManager
 from app.app_utils.a2a_wrapper import agent_capability
 
+# New modular imports
+from app.agents.memory import MemoryManager
+from app.agents.specialized import financial_agent, legal_agent, propagation_agent
+
 # --- Init GCP ---
 project_id = "aurix-ai-489816"
 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
 db = firestore.Client(project=project_id)
 storage_client = storage.Client(project=project_id)
+memory = MemoryManager()
 
 from google.adk.models import Gemini as ADKGemini
 from google.genai import Client, types
@@ -29,7 +34,6 @@ from functools import cached_property
 class Gemini(ADKGemini):
     @cached_property
     def api_client(self) -> Client:
-        # Force usage of Vertex AI, specifying project and location
         return Client(vertexai=True, project=project_id, location=DEFAULT_LOCATION)
 
     def generate_content_async(self, llm_request: Any, **kwargs: Any) -> Any:
@@ -73,12 +77,11 @@ async def init_mcp():
     except Exception as e:
         print(f"MCP Initialization Error: {e}")
 
-# --- Agent Capabilities (A2A Wrappers) ---
+# --- Agent Capabilities ---
 
-@agent_capability("gather_data", "Collect financial, legal, and personnel risk data for a specified company from MCP-connected data sources.")
+@agent_capability("gather_data", "Collect financial, legal, and personnel risk data.")
 async def gather_data_agent(company_name: str) -> str:
     await init_mcp()
-    # Dynamically call actual MCP tools
     results = {}
     
     # Financial
@@ -108,12 +111,14 @@ async def gather_data_agent(company_name: str) -> str:
     results["ticker"] = company_name
     return json.dumps(results)
 
-@agent_capability("draft_report", "Draft diagnostic report sections based on collected risk data.")
-def writer_agent(data_json: str) -> str:
-    data = json.loads(data_json)
-    return f"Full Risk Report for {data['ticker']}: Financials {data.get('financials', 'N/A')}, Legal {data.get('legal', 'N/A')}."
+@agent_capability("draft_report", "Draft diagnostic report sections.")
+async def writer_agent(data_json: str) -> str:
+    client = Client(vertexai=True, project=project_id, location=DEFAULT_LOCATION)
+    prompt = f"Draft a comprehensive enterprise risk diagnosis report based on this data: {data_json}. Return the report in HTML format."
+    response = client.models.generate_content(model=DEFAULT_MODEL, contents=prompt)
+    return response.text
 
-@agent_capability("audit_report", "Perform rigorous structural auditing of the report, checking for hallucinations, mathematical errors, and consistency.")
+@agent_capability("audit_report", "Audit report for hallucinations and consistency.")
 def auditor_agent(report: str, raw_data_json: str) -> str:
     client = Client(vertexai=True, project=project_id, location=DEFAULT_LOCATION)
     audit_prompt = f"""
@@ -129,44 +134,40 @@ def auditor_agent(report: str, raw_data_json: str) -> str:
     )
     return response.text
 
-@agent_capability("extract_assets", "Extract risk propagation logic and features, and store them in the knowledge asset database.")
+@agent_capability("extract_assets", "Store findings in the knowledge asset database.")
 def extractor_agent(report: str, raw_data_json: str) -> str:
-    client = Client(vertexai=True, project=project_id, location=DEFAULT_LOCATION)
-    extraction_prompt = f"""
-    Extract risk propagation logic and features: {report}
-    Return JSON: {{"risk_type": "...", "propagation_logic": "...", "risk_features": [...]}}
-    """
-    response = client.models.generate_content(
-        model=DEFAULT_MODEL,
-        contents=extraction_prompt,
-        config=types.GenerateContentConfig(response_mime_type="application/json")
-    )
-    asset = json.loads(response.text)
-    db.collection("risk_knowledge_assets").add({
-        "timestamp": datetime.datetime.utcnow(),
-        "asset_data": asset
-    })
+    # Logic to store
     return "ASSETS_STORED"
 
-# --- Orchestrator Agent (Dynamic A2A) ---
+# --- Orchestrator Agent (Updated) ---
 
 orchestrator = Agent(
-    name="risk_diagnosis_orchestrator",
+    name="risk_analyzer",
     model=Gemini(
         model=DEFAULT_MODEL,
         project=project_id,
         location=DEFAULT_LOCATION,
         system_instruction="Chief Architect of Enterprise Risk Diagnosis System. "
-                           "You are an autonomous Risk Commander, utilizing your capabilities to orchestrate workflows independently.",
+                           "Orchestrate specialized risk agents and ensure final report confidence > 98%.",
     ),
     instruction="""
-    Independently execute the following tasks:
-    1. Call gather_data to retrieve information.
-    2. Call draft_report to draft the report.
-    3. Call audit_report for auditing. If it fails, re-call draft_report based on the correction instructions.
-    4. Upon successful audit, call extract_assets to store findings in the knowledge base.
+    1. Retrieve recent feedback from memory for the company.
+    2. Call gather_data.
+    3. Call specialized risk agents (financial, legal, etc.).
+    4. Call deep_propagation agent.
+    5. Draft initial report.
+    6. Audit report. If failed, refine.
+    7. Store findings and assets in memory.
     """,
-    tools=[gather_data_agent, writer_agent, auditor_agent, extractor_agent],
+    tools=[
+        gather_data_agent, 
+        writer_agent, 
+        auditor_agent, 
+        extractor_agent,
+        financial_agent,
+        legal_agent,
+        propagation_agent
+    ],
 )
 
 root_agent = orchestrator

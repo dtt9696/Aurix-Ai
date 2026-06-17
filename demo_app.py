@@ -400,8 +400,14 @@ HTML_TEMPLATE = """
                 renderDashboardWithData(data);
             } catch (error) {
                 console.error("Fallback error, waiting for fetch...", error);
-                const data = await fetchPromise; // Fallback failed, wait for fetch
-                renderDashboardWithData(data);
+                try {
+                    const data = await fetchPromise; // Fallback failed, wait for fetch
+                    renderDashboardWithData(data);
+                } catch (fetchError) {
+                    console.error("Fetch failed entirely:", fetchError);
+                    alert("Risk Engine Failure: The audit mesh encountered a critical error. Please ensure GEMINI_API_KEY is configured.");
+                    resetDiagnosis();
+                }
             }
         }
 
@@ -438,127 +444,128 @@ def api_diagnose():
     company = request.args.get('company', 'iRobot')
     ticker = request.args.get('ticker', 'IRBT').upper().strip()
     
-    api_key = os.environ.get("GOOGLE_API_KEY")
-    client = genai.Client(api_key=api_key, vertexai=False)
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     
-    # Dynamically and strictly isolate data for the three companies, physically eliminating any risk of cross-contamination
-    if "IRBT" in ticker or "IROBOT" in ticker:
-        scores = {"overall": 85, "financial": 92, "supply_chain": 88, "legal": 85, "sentiment": 90, "workforce": 85}
-        takeaways = [
-            "<strong>Solvency Crisis</strong>: Altman Z-Score of -13.65 indicates extreme risk of capital structure collapse.",
-            "<strong>Restructuring Status</strong>: Subject to Chapter 11 protection under active off-shore debt-to-equity acquisition.",
-            "<strong>Talent Exodus</strong>: Core C-suite leadership flight (CEO, CFO, CHRO) coupled with massive 50% head-count downsizes."
-        ]
-        facts_prompt = f"""
-        - Bankruptcy: Filed for Chapter 11 bankruptcy (No. 25-12197) after Amazon's $1.4B acquisition failed. Acquired via debt-equity swap by Chinese OEM partner Shenzhen Picea Robotics. Stock delisted.
-        - Solvency: Z-Score of -13.65 (Distress Zone). Piotroski F-Score of 3/9. Total liabilities: $350 Million, cash: $24.8 Million.
-        - News Coverage: High news coverage on insolvency (Boston Globe, TheStreet, Fast Company).
-        - Workforce: CEO Colin Angle, CFO Julie Zeiler, CHRO Russ Campanello resigned. Workforce cut by 50% (31% & 16% layoff rounds). Glassdoor dropped to D- (2.4/5.0).
-        - Supply Chain: Dependent on Shenzhen Picea.
-        - Clickable Real Links:
-          * U.S. Delaware Bankruptcy Court Docket: <a href="https://cases.stretto.com/irobot" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">cases.stretto.com/irobot</a>
-          * CourtListener SDNY Docket 25-cv-05563 Search: <a href="https://www.courtlistener.com/?q=iRobot+25-cv-05563" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">CourtListener 25-cv-05563</a>
-          * SEC EDGAR iRobot Filings (CIK 0001157523): <a href="https://www.sec.gov/edgar/browse/?CIK=0001157523" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">SEC EDGAR 0001157523</a>
-          * Massachusetts Government WARN Registry: <a href="https://www.mass.gov/service-details/warn-report" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Massachusetts WARN Report</a>
-          * Glassdoor iRobot Review Directory: <a href="https://www.glassdoor.com/Reviews/iRobot-Reviews-E13838.htm" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Glassdoor iRobot Reviews</a>
-        """
-    elif "TSLA" in ticker or "TESLA" in ticker:
-        scores = {"overall": 38, "financial": 32, "supply_chain": 45, "legal": 48, "sentiment": 42, "workforce": 29}
-        takeaways = [
-            "<strong>Regulatory Exposure</strong>: Faced intense federal investigations on Autopilot and FSD safety from NHTSA.",
-            "<strong>Key Man Risk</strong>: High organizational dependency on CEO Elon Musk amidst high C-suite executive turnover.",
-            "<strong>Workforce Restructuring</strong>: Frequent global workforce downsizes and temporary high-tech hiring freezes."
-        ]
-        facts_prompt = f"""
-        - Status: Active public automotive and energy giant. Stock price highly volatile.
-        - Solvency: Healthy Altman Z-Score of 4.12, Piotroski F-Score of 7/9. Total liabilities: $38 Billion, cash: $26 Billion.
-        - News Coverage: Heavy news coverage on Autopilot FSD investigations, voiding of Elon Musk's pay package, and global price cuts (Reuters, Bloomberg, Wall Street Journal).
-        - Workforce: Highly dependent on key-man Elon Musk. High executive churn in engineering and public policy. Periodic 10% global restructuring rounds. Glassdoor B (3.8/5.0).
-        - Supply Chain: High reliance on battery supplier CATL (China). In 2021: 45%, 2022: 50%, 2023: 55%, 2024: 60%, 2025: 65% (battery concentration). High geopolitical tariff exposures.
-        - Clickable Real Links:
-          * Delaware Court voided pay package case: <a href="https://www.courtlistener.com/?q=Tesla+pay+voided+Delaware" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">CourtListener Tesla Pay Suit</a>
-          * NHTSA Autopilot Investigation: <a href="https://www.courtlistener.com/?q=NHTSA+Tesla+Autopilot" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">CourtListener NHTSA Docket</a>
-          * SEC EDGAR Tesla Filings (CIK 0001318605): <a href="https://www.sec.gov/edgar/browse/?CIK=0001318605" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">SEC EDGAR 0001318605</a>
-          * Texas Government WARN Registry: <a href="https://www.texasworkforce.org/news/warn-reports" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Texas WARN Reports</a>
-          * Glassdoor Tesla Review Directory: <a href="https://www.glassdoor.com/Reviews/Tesla-Reviews-E43121.htm" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Glassdoor Tesla Reviews</a>
-        """
-    else: # Apple (AAPL)
-        scores = {"overall": 22, "financial": 15, "supply_chain": 38, "legal": 45, "sentiment": 24, "workforce": 28}
-        takeaways = [
-            "<strong>Antitrust Litigation</strong>: Undergoing a landmark US DOJ antitrust lawsuit targeting App Store locks.",
-            "<strong>Offshore Concentration</strong>: High historical reliance on Foxconn China; actively pivoting to India and Vietnam.",
-            "<strong>Solid Retention</strong>: Highly robust balance sheet and cash flow, mitigating structural workforce layoff risks."
-        ]
-        facts_prompt = f"""
-        - Status: Active consumer tech giant with unmatched cash flow.
-        - Solvency: Strong Altman Z-Score of 5.85, Piotroski F-Score of 8/9. Total liabilities: $105 Billion, cash: $67 Billion.
-        - News Coverage: DOJ antitrust lawsuit on App Store monopoly. App Store regulations. Pivot to India (Tata) and Vietnam.
-        - Workforce: Solid workforce retention, minor structural layoffs. High Glassdoor rating B+ (4.1/5.0).
-        - Supply Chain: In 2021: 85%, 2022: 80%, 2023: 75%, 2024: 70%, 2025: 65% (Foxconn concentration).
-        - Clickable Real Links:
-          * DOJ Antitrust Docket Search: <a href="https://www.courtlistener.com/?q=US+v+Apple+Antitrust" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">CourtListener US v. Apple</a>
-          * SEC EDGAR Apple Filings (CIK 0000320193): <a href="https://www.sec.gov/edgar/browse/?CIK=0000320193" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">SEC EDGAR 0000320193</a>
-          * California Government WARN Registry: <a href="https://edd.ca.gov/en/Jobs_and_Training/WARN_Report" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">California WARN Report</a>
-          * Glassdoor Apple Review Directory: <a href="https://www.glassdoor.com/Reviews/Apple-Reviews-E1138.htm" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Glassdoor Apple Reviews</a>
-        """
-
-    # 🏆 Champion Standard: 100% real external compliance and judicial links, 5-year financial & supply chain trend analysis, Black-Gold high contrast
-    # New modules: Legal Compliance (Separate), Workforce Governance (Separate), Cross-module deep risk propagation analysis, Multi-period risk forecasting, Mitigation recommendations.
-    # Major addition: Data accuracy confidence, Shadow audit cross-validation effect description
-    report_prompt = f"""
-    Generate a comprehensive, single-column corporate risk diagnosis report for "{company} ({ticker})" in clean HTML format.
-    
-    Here are the verified audit facts for {company} you MUST use:
-    {facts_prompt}
-    
-    Strict Design Guidelines:
-    1. Background color: `#050505` (rich deep dark, matching the dashboard perfectly). Text: `#d1d5db` (high legibility).
-    2. Heading colors: Strictly use `#ffffff` or `#f9e7b9` (Champagne Gold). Do NOT use dark blue, grey, or any low-contrast dim colors for headings.
-    3. Tables: Use sleek thin borders with `#d4af37/30`. Keep text crisp and distinct. All table headers must use `#f9e7b9` or white text against deep black.
-    4. Links: Every link must use the exact clickable anchor tag provided in the facts above. NEVER use placeholders!
-    
-    The report MUST contain these exact sections:
-    
-    Section 1: EXECUTIVE BRIEF & DIAGNOSIS SUMMARY
-    Provide a detailed financial audit statement for {company} based on live ingested filings.
-    
-    Section 2: FINANCIAL RISK 5-YEAR TREND ANALYSIS (2021-2025)
-    Render a clean HTML table representing the financial metrics exactly as specified in the facts above.
-    Include a descriptive paragraph using your analytical intelligence to interpret this trend.
-    
-    Section 3: SUPPLY CHAIN RISK 5-YEAR TREND ANALYSIS (2021-2025)
-    Render a clean HTML table representing the supply chain metrics exactly as specified in the facts above.
-    Provide an analytical summary of how supply chain structures affect the parent company.
-    
-    Section 4: LEGAL & COMPLIANCE RISK
-    Discuss litigation, dockets, regulatory issues, and anti-trust or bankruptcy cases. You MUST use the exact, active, clickable links provided in the facts above.
-    
-    Section 5: WORKFORCE GOVERNANCE RISK
-    Discuss C-suite exodus, massive layoffs, retention history, and Glassdoor ratings. You MUST use the exact, active, clickable links provided in the facts above.
-    
-    Section 6: PUBLIC SENTIMENT MONITORING
-    Analyze news coverage and media monitoring of insolvency or key corporate crises using the sources and links listed in the facts above.
-    
-    Section 7: CROSS-MODULE RISK PROPAGATION ANALYSIS
-    Detail how the financial distress directly flows into supply chain vulnerability, how reputational drops exacerbate executive flight risk, and how legal class actions amplify cash drain.
-    
-    Section 8: MULTI-PERIOD RISK FORECASTING
-    Provide realistic 3-month, 6-month, and 12-month forward-looking risk trajectory predictions based on current structural issues.
-    
-    Section 9: ACTIONABLE RECOMMENDATIONS & MITIGATION PATHS
-    Provide specific, high-value, actionable mitigation recommendations tailored for creditors, prospective partners, and risk managers.
-    
-    Section 10: 🔒 VERIFIABLE TRUST & RDA ASSET PASSPORT
-    Design a beautiful, high-tech, user-friendly card layout. All headers here must use `#f9e7b9` (Gold) or `#ffffff` (White).
-    Inside the card, create 4 stylized columns or metrics showcasing the verification trails, audit confidence, and distilled data asset features:
-    - Column 1 (Evidence Ingestion Lineage & Confidence): Shows a checked badge '100% MATCHED' with 'Data Accuracy Confidence: 99.8%' based on cross-verification with SEC EDGAR filings.
-    - Column 2 (A2A Process & Cross-Verification): Shows a green badge 'CROSS-VERIFIED' with 'Shadow Audit Status: SUCCESS' (under 100% LangGraph Self-Correction path status).
-    - Column 3 (RDA Cryptographic Status): Shows 'Firestore Sync: SECURED & LOCKED' with a metadata hash tag.
-    - Column 4 (DeFi RWA Compliance & Feature Extraction): Shows 'Feature Extraction: COMPLIANT' with 'Credit Rating: ATTESTED' proving that risk features have been successfully distilled into machine-readable data assets for downstream DeFi/RWA credit evaluations.
-    
-    Return ONLY valid HTML code. No markdown wrap, no backticks.
-    """
     try:
+        client = genai.Client(api_key=api_key, vertexai=False)
+        
+        # Dynamically and strictly isolate data for the three companies, physically eliminating any risk of cross-contamination
+        if "IRBT" in ticker or "IROBOT" in ticker:
+            scores = {"overall": 85, "financial": 92, "supply_chain": 88, "legal": 85, "sentiment": 90, "workforce": 85}
+            takeaways = [
+                "<strong>Solvency Crisis</strong>: Altman Z-Score of -13.65 indicates extreme risk of capital structure collapse.",
+                "<strong>Restructuring Status</strong>: Subject to Chapter 11 protection under active off-shore debt-to-equity acquisition.",
+                "<strong>Talent Exodus</strong>: Core C-suite leadership flight (CEO, CFO, CHRO) coupled with massive 50% head-count downsizes."
+            ]
+            facts_prompt = f"""
+            - Bankruptcy: Filed for Chapter 11 bankruptcy (No. 25-12197) after Amazon's $1.4B acquisition failed. Acquired via debt-equity swap by Chinese OEM partner Shenzhen Picea Robotics. Stock delisted.
+            - Solvency: Z-Score of -13.65 (Distress Zone). Piotroski F-Score of 3/9. Total liabilities: $350 Million, cash: $24.8 Million.
+            - News Coverage: High news coverage on insolvency (Boston Globe, TheStreet, Fast Company).
+            - Workforce: CEO Colin Angle, CFO Julie Zeiler, CHRO Russ Campanello resigned. Workforce cut by 50% (31% & 16% layoff rounds). Glassdoor dropped to D- (2.4/5.0).
+            - Supply Chain: Dependent on Shenzhen Picea.
+            - Clickable Real Links:
+              * U.S. Delaware Bankruptcy Court Docket: <a href="https://cases.stretto.com/irobot" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">cases.stretto.com/irobot</a>
+              * CourtListener SDNY Docket 25-cv-05563 Search: <a href="https://www.courtlistener.com/?q=iRobot+25-cv-05563" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">CourtListener 25-cv-05563</a>
+              * SEC EDGAR iRobot Filings (CIK 0001157523): <a href="https://www.sec.gov/edgar/browse/?CIK=0001157523" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">SEC EDGAR 0001157523</a>
+              * Massachusetts Government WARN Registry: <a href="https://www.mass.gov/service-details/warn-report" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Massachusetts WARN Report</a>
+              * Glassdoor iRobot Review Directory: <a href="https://www.glassdoor.com/Reviews/iRobot-Reviews-E13838.htm" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Glassdoor iRobot Reviews</a>
+            """
+        elif "TSLA" in ticker or "TESLA" in ticker:
+            scores = {"overall": 38, "financial": 32, "supply_chain": 45, "legal": 48, "sentiment": 42, "workforce": 29}
+            takeaways = [
+                "<strong>Regulatory Exposure</strong>: Faced intense federal investigations on Autopilot and FSD safety from NHTSA.",
+                "<strong>Key Man Risk</strong>: High organizational dependency on CEO Elon Musk amidst high C-suite executive turnover.",
+                "<strong>Workforce Restructuring</strong>: Frequent global workforce downsizes and temporary high-tech hiring freezes."
+            ]
+            facts_prompt = f"""
+            - Status: Active public automotive and energy giant. Stock price highly volatile.
+            - Solvency: Healthy Altman Z-Score of 4.12, Piotroski F-Score of 7/9. Total liabilities: $38 Billion, cash: $26 Billion.
+            - News Coverage: Heavy news coverage on Autopilot FSD investigations, voiding of Elon Musk's pay package, and global price cuts (Reuters, Bloomberg, Wall Street Journal).
+            - Workforce: Highly dependent on key-man Elon Musk. High executive churn in engineering and public policy. Periodic 10% global restructuring rounds. Glassdoor B (3.8/5.0).
+            - Supply Chain: High reliance on battery supplier CATL (China). In 2021: 45%, 2022: 50%, 2023: 55%, 2024: 60%, 2025: 65% (battery concentration). High geopolitical tariff exposures.
+            - Clickable Real Links:
+              * Delaware Court voided pay package case: <a href="https://www.courtlistener.com/?q=Tesla+pay+voided+Delaware" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">CourtListener Tesla Pay Suit</a>
+              * NHTSA Autopilot Investigation: <a href="https://www.courtlistener.com/?q=NHTSA+Tesla+Autopilot" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">CourtListener NHTSA Docket</a>
+              * SEC EDGAR Tesla Filings (CIK 0001318605): <a href="https://www.sec.gov/edgar/browse/?CIK=0001318605" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">SEC EDGAR 0001318605</a>
+              * Texas Government WARN Registry: <a href="https://www.texasworkforce.org/news/warn-reports" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Texas WARN Reports</a>
+              * Glassdoor Tesla Review Directory: <a href="https://www.glassdoor.com/Reviews/Tesla-Reviews-E43121.htm" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Glassdoor Tesla Reviews</a>
+            """
+        else: # Apple (AAPL)
+            scores = {"overall": 22, "financial": 15, "supply_chain": 38, "legal": 45, "sentiment": 24, "workforce": 28}
+            takeaways = [
+                "<strong>Antitrust Litigation</strong>: Undergoing a landmark US DOJ antitrust lawsuit targeting App Store locks.",
+                "<strong>Offshore Concentration</strong>: High historical reliance on Foxconn China; actively pivoting to India and Vietnam.",
+                "<strong>Solid Retention</strong>: Highly robust balance sheet and cash flow, mitigating structural workforce layoff risks."
+            ]
+            facts_prompt = f"""
+            - Status: Active consumer tech giant with unmatched cash flow.
+            - Solvency: Strong Altman Z-Score of 5.85, Piotroski F-Score of 8/9. Total liabilities: $105 Billion, cash: $67 Billion.
+            - News Coverage: DOJ antitrust lawsuit on App Store monopoly. App Store regulations. Pivot to India (Tata) and Vietnam.
+            - Workforce: Solid workforce retention, minor structural layoffs. High Glassdoor rating B+ (4.1/5.0).
+            - Supply Chain: In 2021: 85%, 2022: 80%, 2023: 75%, 2024: 70%, 2025: 65% (Foxconn concentration).
+            - Clickable Real Links:
+              * DOJ Antitrust Docket Search: <a href="https://www.courtlistener.com/?q=US+v+Apple+Antitrust" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">CourtListener US v. Apple</a>
+              * SEC EDGAR Apple Filings (CIK 0000320193): <a href="https://www.sec.gov/edgar/browse/?CIK=0000320193" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">SEC EDGAR 0000320193</a>
+              * California Government WARN Registry: <a href="https://edd.ca.gov/en/Jobs_and_Training/WARN_Report" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">California WARN Report</a>
+              * Glassdoor Apple Review Directory: <a href="https://www.glassdoor.com/Reviews/Apple-Reviews-E1138.htm" target="_blank" style="color:#f9e7b9;text-decoration:underline;font-weight:bold;">Glassdoor Apple Reviews</a>
+            """
+
+        # 🏆 Champion Standard: 100% real external compliance and judicial links, 5-year financial & supply chain trend analysis, Black-Gold high contrast
+        # New modules: Legal Compliance (Separate), Workforce Governance (Separate), Cross-module deep risk propagation analysis, Multi-period risk forecasting, Mitigation recommendations.
+        # Major addition: Data accuracy confidence, Shadow audit cross-validation effect description
+        report_prompt = f"""
+        Generate a comprehensive, single-column corporate risk diagnosis report for "{company} ({ticker})" in clean HTML format.
+        
+        Here are the verified audit facts for {company} you MUST use:
+        {{facts_prompt}}
+        
+        Strict Design Guidelines:
+        1. Background color: `#050505` (rich deep dark, matching the dashboard perfectly). Text: `#d1d5db` (high legibility).
+        2. Heading colors: Strictly use `#ffffff` or `#f9e7b9` (Champagne Gold). Do NOT use dark blue, grey, or any low-contrast dim colors for headings.
+        3. Tables: Use sleek thin borders with `#d4af37/30`. Keep text crisp and distinct. All table headers must use `#f9e7b9` or white text against deep black.
+        4. Links: Every link must use the exact clickable anchor tag provided in the facts above. NEVER use placeholders!
+        
+        The report MUST contain these exact sections:
+        
+        Section 1: EXECUTIVE BRIEF & DIAGNOSIS SUMMARY
+        Provide a detailed financial audit statement for {company} based on live ingested filings.
+        
+        Section 2: FINANCIAL RISK 5-YEAR TREND ANALYSIS (2021-2025)
+        Render a clean HTML table representing the financial metrics exactly as specified in the facts above.
+        Include a descriptive paragraph using your analytical intelligence to interpret this trend.
+        
+        Section 3: SUPPLY CHAIN RISK 5-YEAR TREND ANALYSIS (2021-2025)
+        Render a clean HTML table representing the supply chain metrics exactly as specified in the facts above.
+        Provide an analytical summary of how supply chain structures affect the parent company.
+        
+        Section 4: LEGAL & COMPLIANCE RISK
+        Discuss litigation, dockets, regulatory issues, and anti-trust or bankruptcy cases. You MUST use the exact, active, clickable links provided in the facts above.
+        
+        Section 5: WORKFORCE GOVERNANCE RISK
+        Discuss C-suite exodus, massive layoffs, retention history, and Glassdoor ratings. You MUST use the exact, active, clickable links provided in the facts above.
+        
+        Section 6: PUBLIC SENTIMENT MONITORING
+        Analyze news coverage and media monitoring of insolvency or key corporate crises using the sources and links listed in the facts above.
+        
+        Section 7: CROSS-MODULE RISK PROPAGATION ANALYSIS
+        Detail how the financial distress directly flows into supply chain vulnerability, how reputational drops exacerbate executive flight risk, and how legal class actions amplify cash drain.
+        
+        Section 8: MULTI-PERIOD RISK FORECASTING
+        Provide realistic 3-month, 6-month, and 12-month forward-looking risk trajectory predictions based on current structural issues.
+        
+        Section 9: ACTIONABLE RECOMMENDATIONS & MITIGATION PATHS
+        Provide specific, high-value, actionable mitigation recommendations tailored for creditors, prospective partners, and risk managers.
+        
+        Section 10: 🔒 VERIFIABLE TRUST & RDA ASSET PASSPORT
+        Design a beautiful, high-tech, user-friendly card layout. All headers here must use `#f9e7b9` (Gold) or `#ffffff` (White).
+        Inside the card, create 4 stylized columns or metrics showcasing the verification trails, audit confidence, and distilled data asset features:
+        - Column 1 (Evidence Ingestion Lineage & Confidence): Shows a checked badge '100% MATCHED' with 'Data Accuracy Confidence: 99.8%' based on cross-verification with SEC EDGAR filings.
+        - Column 2 (A2A Process & Cross-Verification): Shows a green badge 'CROSS-VERIFIED' with 'Shadow Audit Status: SUCCESS' (under 100% LangGraph Self-Correction path status).
+        - Column 3 (RDA Cryptographic Status): Shows 'Firestore Sync: SECURED & LOCKED' with a metadata hash tag.
+        - Column 4 (DeFi RWA Compliance & Feature Extraction): Shows 'Feature Extraction: COMPLIANT' with 'Credit Rating: ATTESTED' proving that risk features have been successfully distilled into machine-readable data assets for downstream DeFi/RWA credit evaluations.
+        
+        Return ONLY valid HTML code. No markdown wrap, no backticks.
+        """
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=report_prompt,
@@ -575,7 +582,8 @@ def api_diagnose():
             except Exception:
                 pass
     except Exception as e:
-        report_html = f"<h3>Inference Error: {str(e)}</h3>"
+        report_html = f"<div style='background:#1a0000; border:1px solid #ff0000; padding:20px; color:#ffbaba;'><h3>Diagnosis Engine Interruption</h3><p>{str(e)}</p><p>Please ensure GEMINI_API_KEY is correctly configured.</p></div>"
+
 
     return jsonify({
         "ticker": ticker,
